@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IOIO Hacked Sensor </string>
+    <string name="seekbar_label">Move to control the position:</string>
+    <string name="analog_label">Analog reading:</string>
+    <string name="loop_rate_label">Loop Rate: </string>
+</resources>
