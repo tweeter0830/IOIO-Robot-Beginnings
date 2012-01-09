@@ -41,12 +41,12 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 		private PwmOutput pwmOutput_;
 		private DigitalOutput led_;
 		private SensorManager sm_;
-		private Sensor accel_;
-		private AccelListener accelListener_;
+		private Sensor accelSensor_;
+		private Sensor magSensor_;
+		//private AccelListener accelListener_;
 		
-		float accelX_;
-		float accelY_;
-		float accelZ_;
+		float[] accelVector_ = new float[3];
+		float[] magVector_ = new float[3];
 		
 		long lastLoopTime_;
 		long thisLoopTime_;
@@ -59,9 +59,12 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				//Get the sensor manager object
 				sm_ = (SensorManager) getSystemService(SENSOR_SERVICE);
 				//Get a sensor object for the accelerometer
-				accel_ = sm_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-				accelListener_ = new AccelListener();
-				sm_.registerListener(accelListener_, accel_, SensorManager.SENSOR_DELAY_FASTEST);
+				accelSensor_ = sm_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+				magSensor_ = sm_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+				AccelListener accelListener = new AccelListener();
+				//AccelListener magListener = new AccelListener()
+				sm_.registerListener(accelListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
+				sm_.registerListener(accelListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				
 				input_ = ioio_.openAnalogInput(40);
 				pwmOutput_ = ioio_.openPwmOutput(12, 100);
@@ -83,7 +86,8 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				//setText(Float.toString(reading));
 				pwmOutput_.setPulseWidth(500 + seekBar_.getProgress() * 2);
 				led_.write(!toggleButton_.isChecked());
-				setText(Float.toString(accelX_), Double.toString(loopRate_));
+				
+				setText(Float.toString(accelVector_[1]), Double.toString(loopRate_));
 				
 				updateLoopTimes();
 				sleep(5);
@@ -111,10 +115,17 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 
 			@Override
 			public void onSensorChanged(SensorEvent event) {
-		        //synchronized (this) {
-				accelX_ = event.values[0];
-				accelY_ = event.values[1];
-				accelZ_ = event.values[2];
+				if( event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+					accelVector_[0] = event.values[0];
+					accelVector_[1] = event.values[1];
+					accelVector_[2] = event.values[2];
+				}
+				else if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+				{
+					magVector_[0] = event.values[0];
+					magVector_[1] = event.values[1];
+					magVector_[2] = event.values[2]; 
+				}
 			}
 		}
 	}
