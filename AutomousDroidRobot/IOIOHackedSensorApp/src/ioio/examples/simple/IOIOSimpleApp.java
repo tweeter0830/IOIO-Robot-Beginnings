@@ -62,7 +62,6 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				accelSensor_ = sm_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 				magSensor_ = sm_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 				AccelListener accelListener = new AccelListener();
-				//AccelListener magListener = new AccelListener()
 				sm_.registerListener(accelListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				sm_.registerListener(accelListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				
@@ -82,12 +81,15 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 			try {
 				updateLoopRate();
 				
+				float azOrientation = getAzOrientation(accelVector_, magVector_);
+				
 				final float reading = input_.read();
 				//setText(Float.toString(reading));
 				pwmOutput_.setPulseWidth(500 + seekBar_.getProgress() * 2);
 				led_.write(!toggleButton_.isChecked());
 				
-				setText(Float.toString(accelVector_[1]), Double.toString(loopRate_));
+				
+				setText(Float.toString(azOrientation), Double.toString(loopRate_));
 				
 				updateLoopTimes();
 				sleep(5);
@@ -97,6 +99,17 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				enableUi(false);
 				throw e;
 			}
+		}
+		
+		private float getAzOrientation( float[] accelArray, float[] magArray){
+			float[] rotMatrix = new float[9];
+			float[] magIncMatrix = new float[9];
+			float[] returnVals = new float[3];
+			
+			SensorManager.getRotationMatrix(rotMatrix, magIncMatrix, accelArray, magArray);
+			returnVals = SensorManager.getOrientation(rotMatrix, magIncMatrix);
+			
+			return returnVals[0];
 		}
 		
 		private void updateLoopRate(){
@@ -164,4 +177,4 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 		});
 	}
 	
-}
+} 
