@@ -38,23 +38,19 @@ public class TB661Motor implements DcMotor{
 	
 	public TB661Motor(int pin1Num, int pin2Num,
 			int pwmPinNum, int standbyPinNum,
-			int frequency, IOIO ioio) {
+			int frequency, IOIO ioio, DigitalOutput outputPin1) {
 		if( closed_ )
 			return;
 		ioio_ = ioio;
-		try{
-			ioio_.softReset();
-		}
-		catch( ConnectionLostException e ){;
-		}
+		
 //		try{
-//			outputPin1_ = ioio_.openDigitalOutput(pin1Num);
-//			outputPin2_ = ioio_.openDigitalOutput(pin2Num);
-//			pwmPin_ =  ioio_.openPwmOutput(pwmPinNum, frequency);
-//			standbyPin_ = ioio_.openDigitalOutput(standbyPinNum);
+//			//outputPin1.write(true);
+////			outputPin1_ = ioio_.openDigitalOutput(pin1Num);
+////			outputPin2_ = ioio_.openDigitalOutput(pin2Num);
+////			pwmPin_ =  ioio_.openPwmOutput(pwmPinNum, frequency);
+////			standbyPin_ = ioio_.openDigitalOutput(standbyPinNum);
 //		}
 //		catch( ConnectionLostException e ){
-//			exception_ = e;
 //		}
 	}
 
