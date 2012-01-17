@@ -9,5 +9,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLibBT"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MotorLibrary"/>
+	<classpathentry kind="lib" path="/IOIOLib/bin/ioiolib.jar"/>
+	<classpathentry kind="lib" path="/IOIOLibBT/bin/ioiolibbt.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

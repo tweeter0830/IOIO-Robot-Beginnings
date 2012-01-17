@@ -48,7 +48,7 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 		//private AccelListener accelListener_;
 		
 		private TB661Motor motor1_ = null;
-		private TB661Motor motor2_;
+		private TB661Motor motor2_ = null;
 		
 		float[] accelVector_ = new float[3];
 		float[] magVector_ = new float[3];
@@ -61,8 +61,6 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 			try {
 				lastLoopTime_ = System.nanoTime();
 				
-				setText("IOIO Setup :)");
-				
 				//Get the sensor manager object
 				sm_ = (SensorManager) getSystemService(SENSOR_SERVICE);
 				//Get a sensor object for the accelerometer
@@ -72,26 +70,15 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				sm_.registerListener(accelListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				sm_.registerListener(accelListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				
-				input_ = ioio_.openAnalogInput(40);
-				pwmOutput_ = ioio_.openPwmOutput(12, 100);
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
-				IOIO ioio = ioio_;
-				//DigitalOutput outputPin1 = ioio.openDigitalOutput(10);
-				//outputPin1.write(true);
-				//set up Motor
-				setText("Got to Motor Setup");
+
 				motor1_ = new TB661Motor(10, 11, 3, 6, 10, ioio_ );
-				setText("Got past Motor Setup");
+				motor2_ = new TB661Motor(12, 13, 4, 6, 10, ioio_ );
+				motor1_.powerOn();
 				motor1_.moveForward(1);
-				setText("Moving");
-//				if(thisLoopTime_ % 100000 == 0){
-//					setText("trying to Move");
-//					motor1_.move(0.5);
-//					setText("Moved");
-//				}
-					
-				
-				setText("IOIO Setup :)");
+				motor2_.powerOn();
+				motor2_.moveForward(1);
+
 				enableUi(true);
 			} catch (ConnectionLostException e) {
 				enableUi(false);
