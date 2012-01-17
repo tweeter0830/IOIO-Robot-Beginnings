@@ -7,6 +7,7 @@ import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
+import android.util.Log;
 
 /**
  * @author Jacob Huffman
@@ -38,20 +39,24 @@ public class TB661Motor implements DcMotor{
 	
 	public TB661Motor(int pin1Num, int pin2Num,
 			int pwmPinNum, int standbyPinNum,
-			int frequency, IOIO ioio, DigitalOutput outputPin1) {
+			int frequency, IOIO ioio) {
+		Log.v("TB661Motor", "In Motor Constructor");
 		if( closed_ )
 			return;
 		ioio_ = ioio;
 		
-//		try{
-//			//outputPin1.write(true);
-////			outputPin1_ = ioio_.openDigitalOutput(pin1Num);
-////			outputPin2_ = ioio_.openDigitalOutput(pin2Num);
-////			pwmPin_ =  ioio_.openPwmOutput(pwmPinNum, frequency);
-////			standbyPin_ = ioio_.openDigitalOutput(standbyPinNum);
-//		}
-//		catch( ConnectionLostException e ){
-//		}
+		try{
+			Log.v("TB661Motor", "Attempting to write to Pin");
+			//outputPin1.write(true);
+			Log.v("TB661Motor", "Wrote To Pin");
+			outputPin1_ = ioio_.openDigitalOutput(pin1Num);
+			outputPin2_ = ioio_.openDigitalOutput(pin2Num);
+			pwmPin_ =  ioio_.openPwmOutput(pwmPinNum, frequency);
+			standbyPin_ = ioio_.openDigitalOutput(standbyPinNum);
+			Log.v("TB661Motor", "Exciting Constructor");
+		}
+		catch( ConnectionLostException e ){
+		}
 	}
 
 	@Override

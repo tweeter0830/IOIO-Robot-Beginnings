@@ -76,12 +76,14 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				pwmOutput_ = ioio_.openPwmOutput(12, 100);
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				IOIO ioio = ioio_;
-				DigitalOutput outputPin1 = ioio.openDigitalOutput(10);
-				outputPin1.write(true);
+				//DigitalOutput outputPin1 = ioio.openDigitalOutput(10);
+				//outputPin1.write(true);
 				//set up Motor
 				setText("Got to Motor Setup");
-				motor1_ = new TB661Motor(10, 11, 1, 6, 10, ioio_, outputPin1 );
+				motor1_ = new TB661Motor(10, 11, 3, 6, 10, ioio_ );
 				setText("Got past Motor Setup");
+				motor1_.moveForward(1);
+				setText("Moving");
 //				if(thisLoopTime_ % 100000 == 0){
 //					setText("trying to Move");
 //					motor1_.move(0.5);
