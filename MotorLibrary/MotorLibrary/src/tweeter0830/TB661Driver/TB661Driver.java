@@ -36,7 +36,7 @@ public class TB661Driver{
 
 	//private ConnectionLostException exception_;
 	
-	public TB661Driver(int motorNum, int pin1Num, int pin2Num,
+	public void setMotor(int motorNum, int pin1Num, int pin2Num,
 			int pwmPinNum, int standbyPinNum,
 			int frequency, IOIO ioio) throws ConnectionLostException{
 		if( closed_ )
@@ -67,7 +67,7 @@ public class TB661Driver{
 			motor1Out2_.write(false);
 			motor1PWM_.setDutyCycle((float)constrainSpeed( speed ));
 		}
-		else if( motorNum == 2 || motorNum == 3 ){
+		if( motorNum == 2 || motorNum == 3 ){
 			motor2Out1_.write(true);
 			motor2Out2_.write(false);
 			motor2PWM_.setDutyCycle((float)constrainSpeed( speed ));
@@ -83,7 +83,7 @@ public class TB661Driver{
 			motor1Out2_.write(true);
 			motor1PWM_.setDutyCycle((float)constrainSpeed( speed ));
 		}
-		else if( motorNum == 2 || motorNum == 3 ){
+		if( motorNum == 2 || motorNum == 3 ){
 			motor2Out1_.write(false);
 			motor2Out2_.write(true);
 			motor2PWM_.setDutyCycle((float)constrainSpeed( speed ));
@@ -107,7 +107,7 @@ public class TB661Driver{
 			motor1Out2_.write(true);
 			motor1PWM_.setDutyCycle(1);
 		}
-		else if( motorNum == 2 || motorNum == 3 ){
+		if( motorNum == 2 || motorNum == 3 ){
 			motor2Out1_.write(true);
 			motor2Out2_.write(true);
 			motor2PWM_.setDutyCycle(1);
