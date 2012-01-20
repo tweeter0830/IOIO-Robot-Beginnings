@@ -1,22 +1,29 @@
 package ioio.examples.simple;
 
-import ioio.lib.api.AnalogInput;
+//TODO Figure out why only the left motor is running
+//TODO Figure out why the orientation being reported changes axis between screen turn on and off
+//TODO Contain motor controller, sensor and PID in one class. Multithread?
+//TODO Why is the motor so jerky at low pwm?
+
+//import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
-import ioio.lib.api.PwmOutput;
+//import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.AbstractIOIOActivity;
 import android.os.Bundle;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import android.util.Log;
 //Libraries for accessing the sensors
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 import android.hardware.SensorEventListener;
 //Libraries for creating a motor driver class
-import tweeter0830.motorLibrary.TB661.TB661Motor;
+import tweeter0830.TB661Driver.TB661Driver;
+import tweeter0830.pidcontrol.PID;
 
 public class IOIOSimpleApp extends AbstractIOIOActivity {
 	private TextView textView_;
@@ -39,16 +46,13 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
     }
 	
 	class IOIOMotoThread extends AbstractIOIOActivity.IOIOThread {
-		private AnalogInput input_;
-		private PwmOutput pwmOutput_;
 		private DigitalOutput led_;
 		private SensorManager sm_;
 		private Sensor accelSensor_;
 		private Sensor magSensor_;
-		//private AccelListener accelListener_;
-		
-		private TB661Motor motor1_ = null;
-		private TB661Motor motor2_ = null;
+		private AccelListener accelListener_;
+		private PID turnPID_;
+		private TB661Driver motorDriver_ = null;
 		
 		float[] accelVector_ = new float[3];
 		float[] magVector_ = new float[3];
@@ -66,48 +70,89 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				//Get a sensor object for the accelerometer
 				accelSensor_ = sm_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 				magSensor_ = sm_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-				AccelListener accelListener = new AccelListener();
-				sm_.registerListener(accelListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
-				sm_.registerListener(accelListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
+				accelListener_ = new AccelListener();
+				sm_.registerListener(accelListener_, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
+				sm_.registerListener(accelListener_, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 				
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
-
-				motor1_ = new TB661Motor(10, 11, 3, 6, 10, ioio_ );
-				motor2_ = new TB661Motor(12, 13, 4, 6, 10, ioio_ );
-				motor1_.powerOn();
-				motor1_.moveForward(1);
-				motor2_.powerOn();
-				motor2_.moveForward(1);
-
+				motorDriver_ = new TB661Driver();
+				motorDriver_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
+				motorDriver_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
+				motorDriver_.powerOn();
+				motorDriver_.moveForward(1, 1);
+				sleep(500);
+				motorDriver_.move(3, 0);
+				turnPID_ = new PID(1, 0, 0);
+				turnPID_.setSetpoint(0);
+				
+				Log.d("Setup", "Got to the end of setup\n");
 				enableUi(true);
+			} catch (ConnectionLostException e) {
+				enableUi(false);
+				throw e;
+			} catch (InterruptedException e) {
+				sm_.unregisterListener(accelListener_);
+				ioio_.disconnect();
+			}
+		}
+		
+		public void loop() throws ConnectionLostException {
+			try {
+				float azOrientation = getAzOrientation(accelVector_, magVector_);
+				long currentTime = System.nanoTime();
+				double[] motorSpeeds = new double[2];
+				Log.d("Loop", "First PID loop?" + turnPID_.isInitialized() + "\n");
+				if( !turnPID_.isInitialized() ){
+					turnPID_.firstStep(getAzOrientation(accelVector_, magVector_), currentTime);
+				} else {
+					turnPID_.updateProcessVar(azOrientation, currentTime);
+					double turnOut = turnPID_.updateOutput();
+					led_.write(!toggleButton_.isChecked());
+					motorSpeeds = mapPIDOutputToMotor(turnOut, 0);
+					Log.d("Loop", "Motor1: " + motorSpeeds[0] + " Motor2: "+ motorSpeeds[1] + "\n");
+					motorDriver_.move(1,motorSpeeds[0]);
+					motorDriver_.move(2,motorSpeeds[1]);
+					setText(Float.toString(azOrientation), Double.toString(turnOut));
+				}
+				sleep(10);
+			} catch (InterruptedException e) {
+				sm_.unregisterListener(accelListener_);
+				ioio_.disconnect();
 			} catch (ConnectionLostException e) {
 				enableUi(false);
 				throw e;
 			}
 		}
 		
-		public void loop() throws ConnectionLostException {
-			try {
-				updateLoopRate();
-				
-				float azOrientation = getAzOrientation(accelVector_, magVector_);
-				
-				final float reading = input_.read();
-				//setText(Float.toString(reading));
-				pwmOutput_.setPulseWidth(500 + seekBar_.getProgress() * 2);
-				led_.write(!toggleButton_.isChecked());
-				
-				
-				setText(Float.toString(azOrientation), Double.toString(loopRate_));
-				
-				updateLoopTimes();
-				sleep(5);
-			} catch (InterruptedException e) {
-				ioio_.disconnect();
-			} catch (ConnectionLostException e) {
-				enableUi(false);
-				throw e;
+		private double[] mapPIDOutputToMotor(double pidOutput, double speed){
+
+			double leftSpeed = speed - pidOutput;
+			double rightSpeed = speed + pidOutput;
+			double extraTurn;
+			double[] motorSpeeds = new double[2];
+			
+			if( rightSpeed > 1)
+			{
+				extraTurn = rightSpeed - 1;
+				rightSpeed = 1;
+				leftSpeed = leftSpeed - extraTurn;
+			} else if( leftSpeed > 1){
+				extraTurn = leftSpeed - 1;
+				leftSpeed = 1;
+				rightSpeed = rightSpeed - extraTurn;
+			}else if( rightSpeed < -1) {
+				extraTurn = rightSpeed + 1;
+				rightSpeed = -1;
+				leftSpeed = leftSpeed + extraTurn;
+			}else if( leftSpeed < -1) {
+				extraTurn = leftSpeed + 1;
+				leftSpeed = -1;
+				rightSpeed = rightSpeed + extraTurn;
 			}
+			motorSpeeds[0] = leftSpeed;
+			motorSpeeds[1] = rightSpeed;
+			return motorSpeeds;
+			
 		}
 		
 		private float getAzOrientation( float[] accelArray, float[] magArray){
@@ -123,7 +168,7 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 		
 		private void updateLoopRate(){
 			thisLoopTime_ = System.nanoTime();
-			loopRate_ = 1/( (double)(thisLoopTime_-lastLoopTime_)/10000000000L);
+			loopRate_ = 1/( (double)(thisLoopTime_-lastLoopTime_)/1000000000L);
 		}
 		
 		private void updateLoopTimes(){

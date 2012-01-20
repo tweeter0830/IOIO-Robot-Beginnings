@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/MotorLibrary"/>
 	<classpathentry kind="lib" path="/IOIOLib/bin/ioiolib.jar"/>
 	<classpathentry kind="lib" path="/IOIOLibBT/bin/ioiolibbt.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/PID"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

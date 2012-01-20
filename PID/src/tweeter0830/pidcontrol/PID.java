@@ -2,6 +2,7 @@
  * 
  */
 package tweeter0830.pidcontrol;
+import android.util.Log;
 
 /**
  * @author Jacob Huffman
@@ -36,33 +37,36 @@ public class PID {
 	double satOutput_;
 
 	
-	//This is updated updateSetpoint
-	double setpoint_;
+	//This is updated in updateSetpoint
+	double setpoint_ = 0;
 	
 	boolean firstStep = true;
 	
 	public PID(double kp, double ki, double kd){
-		this(kp,ki,kd,99999,1,0,0);
+		this(kp,ki,kd,99999,1,0,99999);
 	}
 	
 	public PID(double kp, double ki, double kd, double filterCoef){
-		this(kp,ki,kd,filterCoef,1,0,0);
+		this(kp,ki,kd,filterCoef,1,0,999999);
 	}
 	
 	public PID(double kp, double ki, double kd, double filterCoef, double beta, double gamma, double windupFactor){
 		kp_=kp;
 		ki_=ki;
 		kd_=kd;
-		filterTime_ = (kd/kp)/filterCoef;
+		filterTime_ = kd/filterCoef; //(kd/kp)/filterCoef;
 		beta_ = beta;
 		gamma_ = gamma;
 		windupFactor_ = windupFactor;
 	}
 	
-	public void updateSetpoint(double setpoint){
+	public void setSetpoint(double setpoint){
 		setpoint_ = setpoint;
 	}
 	
+	public boolean isInitialized(){
+		return !firstStep;
+	}
 	//Update the PID with sensor information, but don't calculate the new output.
 	//Persistent states (Derivative Value, Integral Value and old Time will
 	//need to be updated
@@ -72,7 +76,7 @@ public class PID {
 		
 		
 		long timeChange = time - oldTime_;
-		computeCoef(timeChange/TIMEINPUT);
+		computeCoef((double)timeChange/TIMEINPUT);
 		double prop = kp_*(beta_*setpoint_-proccVar);
 		oldDerivative_ = oldDerivWeight_*oldDerivative_-newDerivWeight_*(proccVar-oldProcessVar_);
 		double unsatOutput = prop+oldDerivative_+oldIntegral_;
@@ -81,6 +85,8 @@ public class PID {
 				windupWeight_*(satOutput_-unsatOutput);
 		oldTime_ = time;
 		oldProcessVar_=proccVar;
+//		Log.d("PID", kp_+","+ki_+","+kd_+"," + oldDerivative_+"," + oldIntegral_+"," + prop+","+integralWeight_ + ","+windupWeight_+","+
+//				timeChange+","+proccVar+","+oldDerivative_+","+oldProcessVar_);
 	}
 
 	public double updateOutput(){
