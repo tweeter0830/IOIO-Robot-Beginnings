@@ -14,49 +14,48 @@ public class PID {
 	private static final long TIMEINPUT = 10000000000L;
 	
 	//constants
-	double kp_;
-	double ki_;
-	double kd_;
-	double filterTime_;
-	double beta_;
-	double gamma_;
-	double windupFactor_;
+	private double kp_ = 1;
+	private double ki_ = 0;
+	private double kd_ = 0;
+	private double filterTime_ = 99999;
+	private double beta_ = 1;
+	private double windupFactor_ = 99999;
 	
 	//These are updated every time updateInput is called
 	//Controller coefficients 
-	double integralWeight_;
-	double oldDerivWeight_;
-	double newDerivWeight_;
-	double windupWeight_;
+	private double integralWeight_;
+	private double oldDerivWeight_;
+	private double newDerivWeight_;
+	private double windupWeight_;
 	
 	//Persistent Variables
-	long oldTime_;
-	double oldProcessVar_;
-	double oldDerivative_;
-	double oldIntegral_;
-	double satOutput_;
+	private long oldTime_;
+	private double oldProcessVar_;
+	private double oldDerivative_;
+	private double oldIntegral_;
+	private double satOutput_;
 
 	
 	//This is updated in updateSetpoint
-	double setpoint_ = 0;
+	private double setpoint_ = 0;
 	
-	boolean firstStep = true;
+	private boolean firstStep_ = true;
+	private boolean outputSet_ = false;
 	
-	public PID(double kp, double ki, double kd){
-		this(kp,ki,kd,99999,1,0,99999);
+	public void setPID(double kp, double ki, double kd){
+		this.setPID(kp,ki,kd,99999,1,99999);
 	}
 	
-	public PID(double kp, double ki, double kd, double filterCoef){
-		this(kp,ki,kd,filterCoef,1,0,999999);
+	public void setPID(double kp, double ki, double kd, double filterCoef){
+		this.setPID(kp,ki,kd,filterCoef,1,99999);
 	}
 	
-	public PID(double kp, double ki, double kd, double filterCoef, double beta, double gamma, double windupFactor){
+	public void setPID(double kp, double ki, double kd, double filterCoef, double beta, double windupFactor){
 		kp_=kp;
 		ki_=ki;
 		kd_=kd;
 		filterTime_ = kd/filterCoef; //(kd/kp)/filterCoef;
 		beta_ = beta;
-		gamma_ = gamma;
 		windupFactor_ = windupFactor;
 	}
 	
@@ -64,16 +63,21 @@ public class PID {
 		setpoint_ = setpoint;
 	}
 	
+	public double getProcessVar(){
+		return oldProcessVar_;
+	}
+	
 	public boolean isInitialized(){
-		return !firstStep;
+		return !firstStep_;
 	}
 	//Update the PID with sensor information, but don't calculate the new output.
 	//Persistent states (Derivative Value, Integral Value and old Time will
 	//need to be updated
 	public void updateProcessVar(double proccVar, long time){
-		if( firstStep == true )
+		if( firstStep_ == true ){
+			firstStep( proccVar, time);
 			return;
-		
+		}
 		
 		long timeChange = time - oldTime_;
 		computeCoef((double)timeChange/TIMEINPUT);
@@ -85,12 +89,18 @@ public class PID {
 				windupWeight_*(satOutput_-unsatOutput);
 		oldTime_ = time;
 		oldProcessVar_=proccVar;
-//		Log.d("PID", kp_+","+ki_+","+kd_+"," + oldDerivative_+"," + oldIntegral_+"," + prop+","+integralWeight_ + ","+windupWeight_+","+
-//				timeChange+","+proccVar+","+oldDerivative_+","+oldProcessVar_);
+		outputSet_ = true;
+		Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
+		Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
+		Log.v("PID", "UnSatOut:"+unsatOutput+"\tSatOut:"+satOutput_+"\n");
 	}
-
+	
+	public boolean outputIsSet(){
+		return outputSet_;
+	}
+	
 	public double updateOutput(){
-		if( firstStep == true )
+		if( firstStep_ == true )
 			return 0;
 		
 		return satOutput_;
@@ -101,7 +111,7 @@ public class PID {
 		oldTime_ = time;
 		oldDerivative_ = 0;
 		oldIntegral_ = 0;
-		firstStep = false;
+		firstStep_ = false;
 	}
 	
 	private double simulateOutputSat(double unsatOutput){
