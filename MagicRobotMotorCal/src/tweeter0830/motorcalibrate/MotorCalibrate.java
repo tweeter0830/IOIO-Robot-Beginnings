@@ -1,4 +1,4 @@
-package ioio.examples.simple;
+package tweeter0830.motorcalibrate;
 
 import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
@@ -11,7 +11,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class IOIOSimpleApp extends AbstractIOIOActivity {
+public class MotorCalibrate extends AbstractIOIOActivity {
 	private TextView textView_;
 	private SeekBar seekBar_;
 	private ToggleButton toggleButton_;
