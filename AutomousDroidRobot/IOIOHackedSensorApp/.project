@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>IOIOHackedSensorApp</name>
+	<name>SimpleCompassFollower</name>
 	<comment></comment>
 	<projects>
+		<project>IOIOLib</project>
+		<project>IOIOLibBT</project>
+		<project>MotorLibrary</project>
+		<project>PID</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

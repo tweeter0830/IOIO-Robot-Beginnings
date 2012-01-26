@@ -1,4 +1,4 @@
-package ioio.examples.simple;
+package tweeter0830.magicrobot;
 
 //OLDTODO Figure out why the orientation being reported changes axis between screen turn on and off
 	//I think that this was due to a failure in my app to unregister sensorListeners
@@ -19,7 +19,7 @@ import android.util.Log;
 //Libraries for creating a motor driver class
 import tweeter0830.pidcontrol.PIDController;
 
-public class IOIOSimpleApp extends AbstractIOIOActivity {
+public class SimpleCompassFollower extends AbstractIOIOActivity {
 	private TextView textView_;
 	private TextView loopRateView_;
 	private SeekBar seekBar_;
@@ -55,7 +55,7 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				
 				pidController_ = new PIDController(sm);
-				pidController_.setPID(1, .25, .5, 9999,1,99999);
+				pidController_.setPID(1, 0, 0, 0,1,0);
 				pidController_.setSetpoint(0);
 				pidController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
 				pidController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
@@ -133,5 +133,4 @@ public class IOIOSimpleApp extends AbstractIOIOActivity {
 			}
 		});
 	}
-	
 } 
