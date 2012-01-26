@@ -17,9 +17,9 @@ public class PID {
 	private double kp_ = 1;
 	private double ki_ = 0;
 	private double kd_ = 0;
-	private double filterTime_ = 99999;
+	private double filterTime_ = 0;
 	private double beta_ = 1;
-	private double windupFactor_ = 99999;
+	private double windupFactor_ = 0;
 	
 	//These are updated every time updateInput is called
 	//Controller coefficients 
@@ -33,8 +33,10 @@ public class PID {
 	private double oldProcessVar_;
 	private double oldDerivative_;
 	private double oldIntegral_;
-	private double satOutput_;
-
+	private double curSatOutput_;
+	private double curUnsatOutput_;
+	private double oldSatOutput_;
+	private double oldUnsatOutput_;
 	
 	//This is updated in updateSetpoint
 	private double setpoint_ = 0;
@@ -43,18 +45,18 @@ public class PID {
 	private boolean outputSet_ = false;
 	
 	public void setPID(double kp, double ki, double kd){
-		this.setPID(kp,ki,kd,99999,1,99999);
+		this.setPID(kp,ki,kd,0,1,0);
 	}
 	
 	public void setPID(double kp, double ki, double kd, double filterCoef){
-		this.setPID(kp,ki,kd,filterCoef,1,99999);
+		this.setPID(kp,ki,kd,filterCoef,1,0);
 	}
 	
 	public void setPID(double kp, double ki, double kd, double filterCoef, double beta, double windupFactor){
 		kp_=kp;
 		ki_=ki;
 		kd_=kd;
-		filterTime_ = kd/filterCoef; //(kd/kp)/filterCoef;
+		filterTime_ = filterCoef*kd/kp;
 		beta_ = beta;
 		windupFactor_ = windupFactor;
 	}
@@ -83,27 +85,30 @@ public class PID {
 		computeCoef((double)timeChange/TIMEINPUT);
 		double prop = kp_*(beta_*setpoint_-proccVar);
 		oldDerivative_ = oldDerivWeight_*oldDerivative_-newDerivWeight_*(proccVar-oldProcessVar_);
-		double unsatOutput = prop+oldDerivative_+oldIntegral_;
-		satOutput_ = simulateOutputSat(unsatOutput);
+		curUnsatOutput_ = prop+oldDerivative_+oldIntegral_;
+		curSatOutput_ = simulateOutputSat(curUnsatOutput_);
 		oldIntegral_ = oldIntegral_+integralWeight_*(setpoint_-proccVar)+
-				windupWeight_*(satOutput_-unsatOutput);
+				windupWeight_*(oldSatOutput_-oldUnsatOutput_);
 		oldTime_ = time;
 		oldProcessVar_=proccVar;
 		outputSet_ = true;
 		Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
 		Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
-		Log.v("PID", "UnSatOut:"+unsatOutput+"\tSatOut:"+satOutput_+"\n");
+		Log.v("PID", "CurrentUnSatOut:"+curUnsatOutput_+"\tCurrentSatOut:"+curSatOutput_+"\n");
+		Log.v("PID", "OldUnSatOut:"+oldUnsatOutput_+"\tOldSatOut:"+oldSatOutput_+"\n");
 	}
 	
 	public boolean outputIsSet(){
 		return outputSet_;
 	}
 	
-	public double updateOutput(){
+	public double outputUpdate(){
 		if( firstStep_ == true )
 			return 0;
 		
-		return satOutput_;
+		oldSatOutput_ = curSatOutput_;
+		oldUnsatOutput_ = curUnsatOutput_;
+		return curSatOutput_;
 	}
 	
 	public void firstStep(double processVar, long time){
@@ -112,6 +117,13 @@ public class PID {
 		oldDerivative_ = 0;
 		oldIntegral_ = 0;
 		firstStep_ = false;
+	}
+	
+	public double getCurrentOutput(){
+		if( firstStep_ == true )
+			return 0;
+		
+		return curSatOutput_;
 	}
 	
 	private double simulateOutputSat(double unsatOutput){
@@ -125,9 +137,17 @@ public class PID {
 	
 	private void computeCoef(double deltaTime){
 		integralWeight_ = ki_*deltaTime;
-		oldDerivWeight_ = filterTime_/(filterTime_+deltaTime);
-		newDerivWeight_ = kd_/(filterTime_+deltaTime);
-		windupWeight_ = deltaTime/windupFactor_;
+		if(filterTime_ <= 0){
+			oldDerivWeight_ = 0;
+			newDerivWeight_ = 1;
+		}else{
+			oldDerivWeight_ = filterTime_/(filterTime_+deltaTime);
+			newDerivWeight_ = kd_/(filterTime_+deltaTime);
+		}
+		if(windupFactor_ <= 0)
+			windupWeight_ = 0;
+		else
+			windupWeight_ = deltaTime/windupFactor_;
 	}
 	
 }

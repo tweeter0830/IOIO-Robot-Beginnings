@@ -63,7 +63,7 @@ public class PIDController {
 		return internalPID_.getProcessVar();
 	}
 	public double getPIDOutput(){
-		return internalPID_.updateOutput();
+		return internalPID_.getCurrentOutput();
 	}
 	public void setMotor(int motorNum, int pin1Num, int pin2Num,
 			int pwmPinNum, int standbyPinNum,
@@ -73,7 +73,7 @@ public class PIDController {
 	
 	public boolean updateMotors(double speed) throws ConnectionLostException{
 		if( internalPID_.outputIsSet() ){
-			motorSpeeds_ = mapPIDOutputToMotor(internalPID_.updateOutput(), speed);
+			motorSpeeds_ = mapPIDOutputToMotor(internalPID_.outputUpdate(), speed);
 			motorDriver_.move(1,motorSpeeds_[0]/2);
 			motorDriver_.move(2,motorSpeeds_[1]/2);
 			return true;
