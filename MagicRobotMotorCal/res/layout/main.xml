@@ -10,12 +10,12 @@
 	    android:text="@string/motor1_label" />
 	
 	<SeekBar
-		android:id="@+id/SeekBar"
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent"
-		android:max="1000"
-		android:progress="500"
-		android:isScrollContainer="false"/>
+	    android:id="@+id/MotorSlide1"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:isScrollContainer="false"
+	    android:max="1000"
+	    android:progress="500" />
 
 	<TextView
 	    android:id="@+id/textView1"
@@ -24,9 +24,12 @@
 	    android:text="@string/motor2_label" />
 
 	<SeekBar
-	    android:id="@+id/seekBar1"
+	    android:id="@+id/MotorSlide2"
 	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content" android:max="1000" android:longClickable="false" android:progress="500"/>
+	    android:layout_height="wrap_content"
+	    android:longClickable="false"
+	    android:max="1000"
+	    android:progress="500" />
 
 	<LinearLayout
 	    android:id="@+id/linearLayout1"
@@ -34,7 +37,7 @@
 	    android:layout_height="wrap_content" >
 
 		<ToggleButton
-		    android:id="@+id/ToggleButton"
+		    android:id="@+id/MotorButton1"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:layout_margin="20px"
@@ -42,7 +45,7 @@
 		    android:textOn="Mot1 is ON" />
 
 		<ToggleButton
-		    android:id="@+id/ToggleButton01"
+		    android:id="@+id/MotorButton2"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:layout_margin="20px"
@@ -69,6 +72,4 @@
 	        android:layout_height="wrap_content"
 	        android:text="0" />
 	</LinearLayout>
-
-	<ImageView android:layout_height="wrap_content" android:id="@+id/imageView1" android:layout_width="wrap_content" android:src="@drawable/ioio_down"></ImageView>
 </LinearLayout>
