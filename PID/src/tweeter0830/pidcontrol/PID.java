@@ -18,7 +18,7 @@ public class PID {
 	private double kp_ = 1;
 	private double ki_ = 0;
 	private double kd_ = 0;
-	private double filterTime_ = 0;
+	private double filterCoef_ = 0;
 	private double beta_ = 1;
 	private double windupFactor_ = 0;
 	
@@ -59,7 +59,8 @@ public class PID {
 		kp_=kp;
 		ki_=ki;
 		kd_=kd;
-		filterTime_ = filterCoef*kd/kp;
+		filterCoef_ = filterCoef;
+		//filterTime_ = filterCoef*kd/kp;
 		beta_ = beta;
 		windupFactor_ = windupFactor;
 	}
@@ -72,7 +73,18 @@ public class PID {
 	public void setSetpoint(double setpoint){
 		setpoint_ = setpoint;
 	}
-	
+	public void setSetKp(double kp){
+		kp_ = kp;
+	}
+	public void setSetKi(double ki){
+		ki_ = ki;
+	}
+	public void setSetFilterCoef(double filterCoef){
+		filterCoef_=filterCoef;
+	}
+	public void setSetWindupFactor(double windupFactor){
+		windupFactor_ = windupFactor;
+	}
 	public double getProcessVar(){
 		return oldProcessVar_;
 	}
@@ -148,12 +160,13 @@ public class PID {
 	
 	private void computeCoef(double deltaTime){
 		integralWeight_ = ki_*deltaTime;
-		if(filterTime_ <= 0){
+		double filterTime = filterCoef_*kd_/kp_;
+		if(filterTime <= 0){
 			oldDerivWeight_ = 0;
 			newDerivWeight_ = 1;
 		}else{
-			oldDerivWeight_ = filterTime_/(filterTime_+deltaTime);
-			newDerivWeight_ = kd_/(filterTime_+deltaTime);
+			oldDerivWeight_ = filterTime/(filterTime+deltaTime);
+			newDerivWeight_ = kd_/(filterTime+deltaTime);
 		}
 		if(windupFactor_ <= 0)
 			windupWeight_ = 0;

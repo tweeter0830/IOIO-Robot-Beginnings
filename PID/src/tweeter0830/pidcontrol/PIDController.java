@@ -13,7 +13,7 @@ import tweeter0830.pidcontrol.SaturationModel;
 public class PIDController implements SaturationModel{
 	String LOGTAG = "PIDController";
 	
-	private PID internalPID_ = new PID();
+	public PID internalPID_ = new PID();
 	private TB661Driver motorDriver_ = new TB661Driver();
 	
 	private SensorManager sm_;
@@ -46,11 +46,11 @@ public class PIDController implements SaturationModel{
 	}
 	
 	public void setPID(double kp, double ki, double kd){
-		internalPID_.setPID(kp,ki,kd,99999,1,99999);
+		internalPID_.setPID(kp,ki,kd,0,1,0);
 	}
 	
 	public void setPID(double kp, double ki, double kd, double filterCoef){
-		internalPID_.setPID(kp,ki,kd,filterCoef,1,99999);
+		internalPID_.setPID(kp,ki,kd,filterCoef,1,0);
 	}
 	
 	public void setPID(double kp, double ki, double kd, double filterCoef, double beta, double windupFactor){
