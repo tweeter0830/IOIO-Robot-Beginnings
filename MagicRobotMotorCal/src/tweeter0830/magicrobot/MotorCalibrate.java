@@ -5,7 +5,7 @@ import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
-import ioio.lib.util.AbstractIOIOActivity;
+import ioio.lib.android.AbstractIOIOActivity;
 import android.os.Bundle;
 import android.widget.SeekBar;
 import android.widget.TextView;

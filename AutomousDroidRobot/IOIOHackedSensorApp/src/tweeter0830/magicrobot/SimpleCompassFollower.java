@@ -9,7 +9,7 @@ import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 //import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
-import ioio.lib.util.AbstractIOIOActivity;
+import ioio.lib.android.AbstractIOIOActivity;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.SeekBar;
@@ -55,7 +55,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				
 				pidController_ = new PIDController(sm);
-				pidController_.setPID(1, .25, .5, 9999,1,99999);
+				pidController_.setPID(.25, 0, 0, 0,1,0);
 				pidController_.setSetpoint(0);
 				pidController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
 				pidController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
@@ -66,6 +66,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				enableUi(true);
 			} catch (ConnectionLostException e) {
 				enableUi(false);
+				ioio_.disconnect();
 				pidController_.close();
 				throw e;
 			} catch (InterruptedException e) {

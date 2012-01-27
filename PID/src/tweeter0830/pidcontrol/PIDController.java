@@ -35,10 +35,10 @@ public class PIDController implements SaturationModel{
 		accelSensor_ = sm_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		magSensor_ = sm_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		OrientationListener = new OrientationListener();
-		sm_.registerListener(OrientationListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
-		sm_.registerListener(OrientationListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
+		boolean sensor1Flag = sm_.registerListener(OrientationListener, accelSensor_, SensorManager.SENSOR_DELAY_FASTEST);
+		boolean sensor2Flag = sm_.registerListener(OrientationListener, magSensor_, SensorManager.SENSOR_DELAY_FASTEST);
 		Log.d(LOGTAG, "Sensor1: "+ accelSensor_.getName()+"\t Sensor2: " + magSensor_.getName()+"\n");
-		
+		Log.d(LOGTAG, "Sensor1Work?: "+ sensor1Flag+"\t Sensor1Work?: " + sensor2Flag+"\n");
 	}
 	
 	public void setSetpoint(double setpoint){
@@ -105,7 +105,7 @@ public class PIDController implements SaturationModel{
 	private class OrientationListener implements SensorEventListener{
 		private float[] accelVector_ = new float[3];
 		private float[] magVector_ = new float[3];
-		
+		private long count_ = 0;
 		@Override
 		public void onAccuracyChanged(Sensor sensor, int accuracy){
 		}
@@ -127,7 +127,11 @@ public class PIDController implements SaturationModel{
 				azOrientation_ = getAzOrientation( accelVector_, magVector_);
 				internalPID_.updateProcessVar(azOrientation_, System.nanoTime());
 			}
-			Log.v(LOGTAG, "SensorName:"+event.sensor.getName() + "\tAccuracy: "+event.accuracy+"/n");
+			if(count_%20==0)
+				Log.v(LOGTAG, "SensorName:"+event.sensor.getName() + "\tAccuracy: "+event.accuracy+"/n");
+				Log.v(LOGTAG, "AccelVals: " + accelVector_[0] +"\t"+ accelVector_[1] +"\t"+ accelVector_[2] +"\n");
+				Log.v(LOGTAG, "MagVals: " + magVector_[0] +"\t"+ magVector_[1] +"\t"+ magVector_[2] +"\n");
+			count_++;
 		}
 		
 		private float getAzOrientation( float[] accelArray, float[] magArray){
@@ -137,7 +141,8 @@ public class PIDController implements SaturationModel{
 			
 			SensorManager.getRotationMatrix(rotMatrix, magIncMatrix, accelArray, magArray);
 			returnVals = SensorManager.getOrientation(rotMatrix, magIncMatrix);
-			Log.v(LOGTAG, "OrientationVals: " + returnVals[0] +"\t"+ returnVals[1] +"\t"+ returnVals[2] +"\n");
+			if(count_%20==0)
+				Log.v(LOGTAG, "OrientationVals: " + returnVals[0] +"\t"+ returnVals[1] +"\t"+ returnVals[2] +"\n");
 			return returnVals[0];
 		}
 	}

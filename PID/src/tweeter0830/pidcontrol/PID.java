@@ -13,6 +13,7 @@ public class PID {
 	//the factor to convert time to seconds
 	//Example: seconds = nanoTime/10^9 Therefore TIMEINPUT = 1000000000L
 	private static final long TIMEINPUT = 10000000000L;
+	private static final boolean LOGGINGON = false;
 	
 	//constants
 	private double kp_ = 1;
@@ -115,12 +116,13 @@ public class PID {
 		oldTime_ = time;
 		oldProcessVar_=proccVar;
 		outputSet_ = true;
-		Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
-		Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
-		Log.v("PID", "CurrentUnSatOut:"+curUnsatOutput_+"\tCurrentSatOut:"+curSatOutput_+"\n");
-		Log.v("PID", "OldUnSatOut:"+oldUnsatOutput_+"\tOldSatOut:"+oldSatOutput_+"\n");
+		if (LOGGINGON){
+			Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
+			Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
+			Log.v("PID", "CurrentUnSatOut:"+curUnsatOutput_+"\tCurrentSatOut:"+curSatOutput_+"\n");
+			Log.v("PID", "OldUnSatOut:"+oldUnsatOutput_+"\tOldSatOut:"+oldSatOutput_+"\n");
+		}
 	}
-	
 	public boolean outputIsSet(){
 		return outputSet_;
 	}
