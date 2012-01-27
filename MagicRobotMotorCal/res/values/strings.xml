@@ -3,4 +3,6 @@
     <string name="app_name">Motor Calibrate</string>
     <string name="seekbar_label">Move to control the position:</string>
     <string name="analog_label">Analog reading:</string>
+    <string name="motor1_label">Motor One PWM</string>
+    <string name="motor2_label">Motor Two PWM</string>
 </resources>
