@@ -9,8 +9,8 @@ import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
 import android.util.Log;
-
-public class PIDController {
+import tweeter0830.pidcontrol.SaturationModel;
+public class PIDController implements SaturationModel{
 	String LOGTAG = "PIDController";
 	
 	private PID internalPID_ = new PID();
@@ -24,9 +24,11 @@ public class PIDController {
 	private float azOrientation_;
 	
 	private double[] motorSpeeds_ = new double[2];
+	private double forwardSpeed_ = 0;
 	
 	public PIDController( SensorManager sm){
-		
+		//force our PID to use the simulateSaturation method on this object
+		internalPID_.attachSatModel(this);
 		//Get the sensor manager object
 		sm_ = sm;
 		//Get a sensor object for the accelerometer
@@ -71,11 +73,24 @@ public class PIDController {
 		motorDriver_.setMotor(motorNum, pin1Num, pin2Num, pwmPinNum, standbyPinNum, frequency, ioio);
 	}
 	
+	public double simulateSaturation(double unsatOutput){
+		double[] motorSpeeds = new double[2];
+		motorSpeeds = mapPIDOutputToMotor(unsatOutput, forwardSpeed_);
+		if(Math.abs(motorSpeeds[0])<=.15 && Math.abs(motorSpeeds[1])<=.15)
+			return 0;
+		else if(unsatOutput>1)
+			return 1;
+		else if(unsatOutput<-1)
+			return -1;
+		else 
+			return unsatOutput;
+	}
+	
 	public boolean updateMotors(double speed) throws ConnectionLostException{
 		if( internalPID_.outputIsSet() ){
 			motorSpeeds_ = mapPIDOutputToMotor(internalPID_.outputUpdate(), speed);
-			motorDriver_.move(1,motorSpeeds_[0]/2);
-			motorDriver_.move(2,motorSpeeds_[1]/2);
+			motorDriver_.move(1,motorSpeeds_[0]);
+			motorDriver_.move(2,motorSpeeds_[1]);
 			return true;
 		}
 		else
@@ -129,8 +144,8 @@ public class PIDController {
 	
 	private double[] mapPIDOutputToMotor(double pidOutput, double speed){
 
-		double leftSpeed = speed - pidOutput;
-		double rightSpeed = speed + pidOutput;
+		double leftSpeed = speed - pidOutput/2;
+		double rightSpeed = speed + pidOutput/2;
 		double extraTurn;
 		double[] motorSpeeds = new double[2];
 		

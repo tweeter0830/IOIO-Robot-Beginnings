@@ -3,6 +3,7 @@
  */
 package tweeter0830.pidcontrol;
 import android.util.Log;
+import tweeter0830.pidcontrol.SaturationModel;
 
 /**
  * @author Jacob Huffman
@@ -41,6 +42,8 @@ public class PID {
 	//This is updated in updateSetpoint
 	private double setpoint_ = 0;
 	
+	private SaturationModel externalSatModel_ = null;
+	private boolean externalSatModelSet_ = false;
 	private boolean firstStep_ = true;
 	private boolean outputSet_ = false;
 	
@@ -61,6 +64,11 @@ public class PID {
 		windupFactor_ = windupFactor;
 	}
 	
+	public void attachSatModel(SaturationModel satModel){
+		externalSatModel_ = satModel;
+		externalSatModelSet_ = true;
+		
+	}
 	public void setSetpoint(double setpoint){
 		setpoint_ = setpoint;
 	}
@@ -86,7 +94,10 @@ public class PID {
 		double prop = kp_*(beta_*setpoint_-proccVar);
 		oldDerivative_ = oldDerivWeight_*oldDerivative_-newDerivWeight_*(proccVar-oldProcessVar_);
 		curUnsatOutput_ = prop+oldDerivative_+oldIntegral_;
-		curSatOutput_ = simulateOutputSat(curUnsatOutput_);
+		if(externalSatModelSet_)
+			curSatOutput_ = externalSatModel_.simulateSaturation(curUnsatOutput_);
+		else
+			curSatOutput_ = simulateSimpleSat(curUnsatOutput_);
 		oldIntegral_ = oldIntegral_+integralWeight_*(setpoint_-proccVar)+
 				windupWeight_*(oldSatOutput_-oldUnsatOutput_);
 		oldTime_ = time;
@@ -126,7 +137,7 @@ public class PID {
 		return curSatOutput_;
 	}
 	
-	private double simulateOutputSat(double unsatOutput){
+	private double simulateSimpleSat(double unsatOutput){
 		if(unsatOutput>1)
 			return 1;
 		else if(unsatOutput<-1)
