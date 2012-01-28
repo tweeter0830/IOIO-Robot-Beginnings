@@ -55,7 +55,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				
 				pidController_ = new PIDController(sm);
-				pidController_.setPID(.25, 0, 0, 0,1,0);
+				pidController_.setPID(.5, 0, 0, 0,1,0);
 				pidController_.setSetpoint(0);
 				pidController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
 				pidController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
@@ -110,8 +110,8 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				seekBar_.setEnabled(enable);
-				toggleButton_.setEnabled(enable);
+//				seekBar_.setEnabled(enable);
+//				toggleButton_.setEnabled(enable);
 			}
 		});
 	}
@@ -120,7 +120,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				textView_.setText(str1);
+//				textView_.setText(str1);
 			}
 		});
 	}
@@ -129,8 +129,8 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				textView_.setText(str1);
-				loopRateView_.setText(str2);
+//				textView_.setText(str1);
+//				loopRateView_.setText(str2);
 			}
 		});
 	}
