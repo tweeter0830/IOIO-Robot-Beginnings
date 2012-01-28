@@ -3,6 +3,7 @@
  */
 package tweeter0830.pidcontrol;
 import android.util.Log;
+import tweeter0830.pidcontrol.SaturationModel;
 
 /**
  * @author Jacob Huffman
@@ -12,12 +13,13 @@ public class PID {
 	//the factor to convert time to seconds
 	//Example: seconds = nanoTime/10^9 Therefore TIMEINPUT = 1000000000L
 	private static final long TIMEINPUT = 10000000000L;
+	private static final boolean LOGGINGON = false;
 	
 	//constants
 	private double kp_ = 1;
 	private double ki_ = 0;
 	private double kd_ = 0;
-	private double filterTime_ = 0;
+	private double filterCoef_ = 0;
 	private double beta_ = 1;
 	private double windupFactor_ = 0;
 	
@@ -41,6 +43,8 @@ public class PID {
 	//This is updated in updateSetpoint
 	private double setpoint_ = 0;
 	
+	private SaturationModel externalSatModel_ = null;
+	private boolean externalSatModelSet_ = false;
 	private boolean firstStep_ = true;
 	private boolean outputSet_ = false;
 	
@@ -56,15 +60,32 @@ public class PID {
 		kp_=kp;
 		ki_=ki;
 		kd_=kd;
-		filterTime_ = filterCoef*kd/kp;
+		filterCoef_ = filterCoef;
+		//filterTime_ = filterCoef*kd/kp;
 		beta_ = beta;
 		windupFactor_ = windupFactor;
 	}
 	
+	public void attachSatModel(SaturationModel satModel){
+		externalSatModel_ = satModel;
+		externalSatModelSet_ = true;
+		
+	}
 	public void setSetpoint(double setpoint){
 		setpoint_ = setpoint;
 	}
-	
+	public void setSetKp(double kp){
+		kp_ = kp;
+	}
+	public void setSetKi(double ki){
+		ki_ = ki;
+	}
+	public void setSetFilterCoef(double filterCoef){
+		filterCoef_=filterCoef;
+	}
+	public void setSetWindupFactor(double windupFactor){
+		windupFactor_ = windupFactor;
+	}
 	public double getProcessVar(){
 		return oldProcessVar_;
 	}
@@ -86,18 +107,22 @@ public class PID {
 		double prop = kp_*(beta_*setpoint_-proccVar);
 		oldDerivative_ = oldDerivWeight_*oldDerivative_-newDerivWeight_*(proccVar-oldProcessVar_);
 		curUnsatOutput_ = prop+oldDerivative_+oldIntegral_;
-		curSatOutput_ = simulateOutputSat(curUnsatOutput_);
+		if(externalSatModelSet_)
+			curSatOutput_ = externalSatModel_.simulateSaturation(curUnsatOutput_);
+		else
+			curSatOutput_ = simulateSimpleSat(curUnsatOutput_);
 		oldIntegral_ = oldIntegral_+integralWeight_*(setpoint_-proccVar)+
 				windupWeight_*(oldSatOutput_-oldUnsatOutput_);
 		oldTime_ = time;
 		oldProcessVar_=proccVar;
 		outputSet_ = true;
-		Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
-		Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
-		Log.v("PID", "CurrentUnSatOut:"+curUnsatOutput_+"\tCurrentSatOut:"+curSatOutput_+"\n");
-		Log.v("PID", "OldUnSatOut:"+oldUnsatOutput_+"\tOldSatOut:"+oldSatOutput_+"\n");
+		if (LOGGINGON){
+			Log.v("PID", "Kp:"+kp_+"\tki:"+ki_+"\tkd:"+kd_+"\n");
+			Log.v("PID", "P:"+prop+"\tI:"+oldIntegral_+"\tD:"+oldDerivative_+"\n");
+			Log.v("PID", "CurrentUnSatOut:"+curUnsatOutput_+"\tCurrentSatOut:"+curSatOutput_+"\n");
+			Log.v("PID", "OldUnSatOut:"+oldUnsatOutput_+"\tOldSatOut:"+oldSatOutput_+"\n");
+		}
 	}
-	
 	public boolean outputIsSet(){
 		return outputSet_;
 	}
@@ -126,7 +151,7 @@ public class PID {
 		return curSatOutput_;
 	}
 	
-	private double simulateOutputSat(double unsatOutput){
+	private double simulateSimpleSat(double unsatOutput){
 		if(unsatOutput>1)
 			return 1;
 		else if(unsatOutput<-1)
@@ -137,12 +162,13 @@ public class PID {
 	
 	private void computeCoef(double deltaTime){
 		integralWeight_ = ki_*deltaTime;
-		if(filterTime_ <= 0){
+		double filterTime = filterCoef_*kd_/kp_;
+		if(filterTime <= 0){
 			oldDerivWeight_ = 0;
 			newDerivWeight_ = 1;
 		}else{
-			oldDerivWeight_ = filterTime_/(filterTime_+deltaTime);
-			newDerivWeight_ = kd_/(filterTime_+deltaTime);
+			oldDerivWeight_ = filterTime/(filterTime+deltaTime);
+			newDerivWeight_ = kd_/(filterTime+deltaTime);
 		}
 		if(windupFactor_ <= 0)
 			windupWeight_ = 0;
