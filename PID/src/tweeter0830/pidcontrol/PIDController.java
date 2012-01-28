@@ -111,7 +111,7 @@ public class PIDController implements SaturationModel{
 		}
 
 		@Override
-		public void onSensorChanged(SensorEvent event) {
+		public synchronized void onSensorChanged(SensorEvent event) {
 			if( event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
 				accelVector_[0] = event.values[0];
 				accelVector_[1] = event.values[1];
