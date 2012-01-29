@@ -13,15 +13,65 @@
 
 	</LinearLayout>
 
-	<ToggleButton
-		android:id="@+id/ToggleButton"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_gravity="center_horizontal"
-		android:layout_margin="20px"
-		android:textOff="Led is OFF"
-		android:textOn="Led is ON"
-		/>
+	<LinearLayout
+	    android:id="@+id/linearLayout3"
+	    android:layout_width="match_parent"
+	    android:layout_height="52dp"
+	    android:gravity="center|clip_horizontal|fill_vertical" >
+
+		<ToggleButton
+		    android:id="@+id/ProccesToggle"
+		    android:layout_width="wrap_content"
+		    android:layout_height="50dp"
+		    android:layout_margin="20px"
+		    android:textOff="Proc is Off"
+		    android:textOn="Proc is On" />
+
+	    <Button
+	        android:id="@+id/resetButton"
+	        android:layout_width="wrap_content"
+	        android:layout_height="50dp"
+	        android:text="Reset" />
+
+	</LinearLayout>
+
+	<LinearLayout
+	    android:id="@+id/LinearLayout03"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" >
+
+	    <TextView
+	        android:id="@+id/TextView01"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/setpointTextBoxVal"
+	        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	    <EditText
+	        android:id="@+id/editTextSetpoint"
+	        android:layout_width="53dp"
+	        android:layout_height="wrap_content"
+	        android:inputType="numberDecimal"
+	        android:lines="1"
+	        android:maxLength="5"
+	        android:singleLine="true"
+	        android:text="@string/defaultSetpointVal"
+	        android:width="40dip" />
+
+	    <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="@string/curValueText"
+	        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	    <TextView
+	        android:id="@+id/outputView"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/currentTextBoxVal"
+	        android:textAppearance="?android:attr/textAppearanceMedium" />
+	</LinearLayout>
 
 	<LinearLayout
 	    android:id="@+id/linearLayout1"

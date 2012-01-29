@@ -10,6 +10,7 @@ import ioio.lib.api.exception.ConnectionLostException;
 
 import android.util.Log;
 import tweeter0830.pidcontrol.SaturationModel;
+//TODO make motors update in separate thread
 public class PIDController implements SaturationModel{
 	String LOGTAG = "PIDController";
 	
@@ -41,6 +42,7 @@ public class PIDController implements SaturationModel{
 		Log.d(LOGTAG, "Sensor1Work?: "+ sensor1Flag+"\t Sensor1Work?: " + sensor2Flag+"\n");
 	}
 	
+	//TODO add pause method and variable
 	public void setSetpoint(double setpoint){
 		internalPID_.setSetpoint(setpoint);
 	}
