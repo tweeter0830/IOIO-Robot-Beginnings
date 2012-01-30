@@ -7,13 +7,18 @@ package tweeter0830.magicrobot;
 //TODO look up how to make a class multithread safe
 
 //import ioio.lib.api.AnalogInput;
+import java.text.DecimalFormat;
+
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 //import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.android.AbstractIOIOActivity;
+import ioio.lib.android.ActivityDependentIOIOConnectionBootstrap;
+import ioio.lib.spi.IOIOConnectionBootstrap;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -24,6 +29,8 @@ import android.util.Log;
 import tweeter0830.pidcontrol.PIDController;
 
 public class SimpleCompassFollower extends AbstractIOIOActivity {
+	public static final String LOGTAG_ = "Compass Follow";
+	
 	private TextView PIDOutputView_;
 	private EditText setpointView_;
 	private EditText kpView_;
@@ -44,9 +51,15 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 	private double defaultWindup_;
 	private double defaultSetpoint_;
 			
+	public volatile boolean resetFlag_=false; 
+	
+	private IOIOMotoThread IOIOThread_ = null;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(LOGTAG_, "Created\n");
+        
         setContentView(R.layout.main);
         
         PIDOutputView_ = 	(TextView)findViewById(R.id.outputView);
@@ -68,21 +81,50 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
     	defaultWindup_ = Double.valueOf(this.getString(R.string.defaultWindupVal).trim()).doubleValue();
     	defaultSetpoint_ = Double.valueOf(this.getString(R.string.defaultSetpointVal).trim()).doubleValue();
     	
+    	resetButton_.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	resetFlag_ = true;
+            }
+        });
+    	
         enableUi(false);
     }
     
+	@Override
+	protected void onStop() {
+		if(IOIOThread_!=null)
+			IOIOThread_.close();
+		
+		Log.v(LOGTAG_, "Stopped\n");
+		super.onStop();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		if(IOIOThread_!=null)
+			IOIOThread_.close();
+		
+		Log.v(LOGTAG_, "Destroyed\n");
+		super.onDestroy();
+	}	
+	
 	class IOIOMotoThread extends AbstractIOIOActivity.IOIOThread {
 		private DigitalOutput led_;
 		
-		long lastLoopTime_;
-		long thisLoopTime_;
-		double loopRate_;
-		PIDController pidController_;
+		private float setpointInput_;
+		private float kpInput_;
+		private float kiInput_;
+		private float kdInput_;
+		private float betaInput_;
+		private float filterInput_;
+		private float windupInput_;
+		private boolean procButtonVal_;
+		
+		private double loopRate_;
+		private PIDController pidController_;
 		
 		public void setup() throws ConnectionLostException {
 			try {
-				lastLoopTime_ = System.nanoTime();
-				
 				SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
 				
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
@@ -116,13 +158,31 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		
 		public void loop() throws ConnectionLostException {
 			try {
-				//read button states/editText values
-				//If toggle button is toggled pause PIDControl, otherwise unpause and update motor
 				//If reset button has been pressed, reset internal PID stuff
-				
+				if(resetFlag_){
+					pidController_.internalPID_.reset();
+					//now that we've dealt with the flag, turn it back to false
+					resetFlag_=false;
+				}
+				//If toggle button is toggled pause PIDControl, otherwise unpause and update motor
+				pidController_.pause(!proccesingButton_.isChecked());
+				if(proccesingButton_.isChecked())
+				{
+					//read toggle button state/editText values
+					readInputs();
+					//set PidVals
+					pidController_.internalPID_.setPID(	kpInput_, 
+														kiInput_, 
+														kdInput_, 
+														filterInput_, 
+														betaInput_, 
+														windupInput_);
+					pidController_.internalPID_.setSetpoint(setpointInput_);
+				}
+				//PIDController won't actually update the motor if paused
 				boolean motorUpdated = pidController_.updateMotors(0);
 				//update the process variable text line
-				setOutputText(Double.toString(pidController_.getProcessVar()));
+				setOutputText(pidController_.getProcessVar());
 				sleep(100);
 			} catch (InterruptedException e) {
 				ioio_.disconnect();
@@ -134,19 +194,26 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 			} 
 		}
 		
-		private void updateLoopRate(){
-			thisLoopTime_ = System.nanoTime();
-			loopRate_ = 1/( (double)(thisLoopTime_-lastLoopTime_)/1000000000L);
+		private void readInputs(){
+			setpointInput_ = Double.valueOf(setpointView_.getText().toString().trim()).floatValue();
+			kpInput_ = Double.valueOf(kpView_.getText().toString().trim()).floatValue();
+			kiInput_ = Double.valueOf(kiView_.getText().toString().trim()).floatValue();
+			kdInput_ = Double.valueOf(kdView_.getText().toString().trim()).floatValue();
+			betaInput_ = Double.valueOf(betaView_.getText().toString().trim()).floatValue();
+			filterInput_ = Double.valueOf(filterView_.getText().toString().trim()).floatValue();
+			windupInput_ = Double.valueOf(windupView_.getText().toString().trim()).floatValue();
 		}
 		
-		private void updateLoopTimes(){
-			lastLoopTime_ = thisLoopTime_;
+		public void close(){
+			if(pidController_!=null)
+				pidController_.close();
 		}
 	}
 
 	@Override
 	protected AbstractIOIOActivity.IOIOThread createIOIOThread() {
-		return new IOIOMotoThread();
+		IOIOThread_ = new IOIOMotoThread();
+		return IOIOThread_;
 	}
 
 	private void enableUi(final boolean enable) {
@@ -159,23 +226,13 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		});
 	}
 	
-	private void setOutputText(final String str1) {
+	private void setOutputText(final double outputVar) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				PIDOutputView_.setText(str1);
+				DecimalFormat twoPlaces = new DecimalFormat("0.00");
+				PIDOutputView_.setText(twoPlaces.format(outputVar));
 			}
 		});
 	}
-	
-	private void setText(final String str1, final String str2) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-//				textView_.setText(str1);
-//				loopRateView_.setText(str2);
-			}
-		});
-	}
-	
 } 

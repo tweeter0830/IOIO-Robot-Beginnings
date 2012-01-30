@@ -61,7 +61,6 @@ public class PID {
 		ki_=ki;
 		kd_=kd;
 		filterCoef_ = filterCoef;
-		//filterTime_ = filterCoef*kd/kp;
 		beta_ = beta;
 		windupFactor_ = windupFactor;
 	}
@@ -69,25 +68,34 @@ public class PID {
 	public void attachSatModel(SaturationModel satModel){
 		externalSatModel_ = satModel;
 		externalSatModelSet_ = true;
-		
 	}
+	
 	public void setSetpoint(double setpoint){
 		setpoint_ = setpoint;
 	}
+	
 	public void setSetKp(double kp){
 		kp_ = kp;
 	}
+	
 	public void setSetKi(double ki){
 		ki_ = ki;
 	}
-	public void setSetFilterCoef(double filterCoef){
+	
+	public void setFilterCoef(double filterCoef){
 		filterCoef_=filterCoef;
 	}
-	public void setSetWindupFactor(double windupFactor){
+	
+	public void setWindupFactor(double windupFactor){
 		windupFactor_ = windupFactor;
 	}
+	
 	public double getProcessVar(){
 		return oldProcessVar_;
+	}
+	
+	public void reset(){
+		firstStep_ = true;
 	}
 	
 	public boolean isInitialized(){

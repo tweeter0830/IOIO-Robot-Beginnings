@@ -14,6 +14,7 @@ import tweeter0830.pidcontrol.SaturationModel;
 public class PIDController implements SaturationModel{
 	String LOGTAG = "PIDController";
 	
+	private final boolean ISLOGGING = true;
 	public PID internalPID_ = new PID();
 	private TB661Driver motorDriver_ = new TB661Driver();
 	
@@ -26,6 +27,8 @@ public class PIDController implements SaturationModel{
 	
 	private double[] motorSpeeds_ = new double[2];
 	private double forwardSpeed_ = 0;
+	
+	private boolean PIDPaused_ = false;
 	
 	public PIDController( SensorManager sm){
 		//force our PID to use the simulateSaturation method on this object
@@ -42,7 +45,10 @@ public class PIDController implements SaturationModel{
 		Log.d(LOGTAG, "Sensor1Work?: "+ sensor1Flag+"\t Sensor1Work?: " + sensor2Flag+"\n");
 	}
 	
-	//TODO add pause method and variable
+	public void pause(boolean pauseVal){
+		PIDPaused_ = pauseVal;
+	}
+	
 	public void setSetpoint(double setpoint){
 		internalPID_.setSetpoint(setpoint);
 	}
@@ -89,7 +95,12 @@ public class PIDController implements SaturationModel{
 	}
 	
 	public boolean updateMotors(double speed) throws ConnectionLostException{
-		if( internalPID_.outputIsSet() ){
+		if(PIDPaused_)
+		{
+			motorDriver_.brake(3);
+			return false;
+		}
+		else if( internalPID_.outputIsSet()){
 			motorSpeeds_ = mapPIDOutputToMotor(internalPID_.outputUpdate(), speed);
 			motorDriver_.move(1,motorSpeeds_[0]);
 			motorDriver_.move(2,motorSpeeds_[1]);
@@ -127,12 +138,15 @@ public class PIDController implements SaturationModel{
 			}
 			if(magVector_[0]  != 0.0 && accelVector_[0] != 0.0){
 				azOrientation_ = getAzOrientation( accelVector_, magVector_);
-				internalPID_.updateProcessVar(azOrientation_, System.nanoTime());
+				if( !PIDPaused_)
+					internalPID_.updateProcessVar(azOrientation_, System.nanoTime());
 			}
-			if(count_%20==0)
+			if(ISLOGGING && count_%20==0)
+			{
 				Log.v(LOGTAG, "SensorName:"+event.sensor.getName() + "\tAccuracy: "+event.accuracy+"/n");
 				Log.v(LOGTAG, "AccelVals: " + accelVector_[0] +"\t"+ accelVector_[1] +"\t"+ accelVector_[2] +"\n");
 				Log.v(LOGTAG, "MagVals: " + magVector_[0] +"\t"+ magVector_[1] +"\t"+ magVector_[2] +"\n");
+			}
 			count_++;
 		}
 		
@@ -143,7 +157,7 @@ public class PIDController implements SaturationModel{
 			
 			SensorManager.getRotationMatrix(rotMatrix, magIncMatrix, accelArray, magArray);
 			returnVals = SensorManager.getOrientation(rotMatrix, magIncMatrix);
-			if(count_%20==0)
+			if(ISLOGGING && count_%20==0)
 				Log.v(LOGTAG, "OrientationVals: " + returnVals[0] +"\t"+ returnVals[1] +"\t"+ returnVals[2] +"\n");
 			return returnVals[0];
 		}
