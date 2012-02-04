@@ -14,16 +14,15 @@ import ioio.lib.api.IOIO;
 //import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.android.AbstractIOIOActivity;
-import ioio.lib.android.ActivityDependentIOIOConnectionBootstrap;
-import ioio.lib.spi.IOIOConnectionBootstrap;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import android.view.View.OnKeyListener;
 import android.util.Log;
 //Libraries for creating a motor driver class
 import tweeter0830.pidcontrol.PIDController;
@@ -41,17 +40,16 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 	private EditText windupView_;
 	private ToggleButton proccesingButton_;
 	private Button resetButton_;
-
-
-	private double defaultkp_;
-	private double defaultki_;
-	private double defaultkd_;
-	private double defaultBeta_;
-	private double defaultFilter_;
-	private double defaultWindup_;
-	private double defaultSetpoint_;
-			
-	public volatile boolean resetFlag_=false; 
+	
+	private volatile boolean resetFlag_=false;
+	private volatile floatWrapper setpointInput_ = new floatWrapper();
+	private volatile floatWrapper kpInput_ = new floatWrapper();
+	private volatile floatWrapper kiInput_ = new floatWrapper();
+	private volatile floatWrapper kdInput_ = new floatWrapper();
+	private volatile floatWrapper betaInput_ = new floatWrapper();
+	private volatile floatWrapper filterInput_ = new floatWrapper();
+	private volatile floatWrapper windupInput_ = new floatWrapper();
+	private volatile boolean procButtonVal_;
 	
 	private IOIOMotoThread IOIOThread_ = null;
 	
@@ -62,6 +60,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
         
         setContentView(R.layout.main);
         
+        //find all of our views
         PIDOutputView_ = 	(TextView)findViewById(R.id.outputView);
         setpointView_ = 	(EditText)findViewById(R.id.editTextSetpoint);
         kpView_ = 			(EditText)findViewById(R.id.editTextKp);
@@ -73,19 +72,30 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
         proccesingButton_ = (ToggleButton)findViewById(R.id.ProccesToggle);
         resetButton_ = 		(Button)findViewById(R.id.resetButton);
         
-    	defaultkp_ = Double.valueOf(this.getString(R.string.defaultKpVal).trim()).doubleValue();
-    	defaultki_ = Double.valueOf(this.getString(R.string.defaultKiVal).trim()).doubleValue();
-    	defaultkd_ = Double.valueOf(this.getString(R.string.defaultKdVal).trim()).doubleValue();
-    	defaultBeta_ = Double.valueOf(this.getString(R.string.defaultBetaVal).trim()).doubleValue();
-    	defaultFilter_ = Double.valueOf(this.getString(R.string.defaultFilterVal).trim()).doubleValue();
-    	defaultWindup_ = Double.valueOf(this.getString(R.string.defaultWindupVal).trim()).doubleValue();
-    	defaultSetpoint_ = Double.valueOf(this.getString(R.string.defaultSetpointVal).trim()).doubleValue();
+        //Get default values for our inputs
+        kpInput_.floatVal = Float.valueOf(this.getString(R.string.defaultKpVal).trim()).floatValue();
+        kiInput_.floatVal = Float.valueOf(this.getString(R.string.defaultKiVal).trim()).floatValue();
+        kdInput_.floatVal = Float.valueOf(this.getString(R.string.defaultKdVal).trim()).floatValue();
+        betaInput_.floatVal = Float.valueOf(this.getString(R.string.defaultBetaVal).trim()).floatValue();
+        filterInput_.floatVal = Float.valueOf(this.getString(R.string.defaultFilterVal).trim()).floatValue();
+        windupInput_.floatVal = Float.valueOf(this.getString(R.string.defaultWindupVal).trim()).floatValue();
+        setpointInput_.floatVal = Float.valueOf(this.getString(R.string.defaultSetpointVal).trim()).floatValue();
     	
+        //A listener to handle when the user presses the reset button
     	resetButton_.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	resetFlag_ = true;
             }
         });
+    	
+    	//Assign listeners to update the appropriate float values when their respective views change
+    	kpView_.setOnKeyListener(new assignEditTextListener(kpView_,kpInput_));
+    	kiView_.setOnKeyListener(new assignEditTextListener(kiView_,kiInput_));
+    	kdView_.setOnKeyListener(new assignEditTextListener(kdView_,kdInput_));
+    	betaView_.setOnKeyListener(new assignEditTextListener(betaView_,betaInput_));
+    	filterView_.setOnKeyListener(new assignEditTextListener(filterView_,filterInput_));
+    	windupView_.setOnKeyListener(new assignEditTextListener(windupView_,windupInput_));
+    	setpointView_.setOnKeyListener(new assignEditTextListener(setpointView_,setpointInput_));
     	
         enableUi(false);
     }
@@ -108,19 +118,53 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		super.onDestroy();
 	}	
 	
+	class assignEditTextListener implements OnKeyListener{
+
+		private EditText inputView_;
+		private floatWrapper inFloat_;
+		
+		public assignEditTextListener(EditText inputView, floatWrapper inFloat ){
+			inputView_ = inputView;
+			inFloat_ = inFloat;
+		}
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+	        // If the event is a key-down event on the "enter" button
+	        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+	            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+	        	// Perform action on key press
+		        try{
+		        	inFloat_.floatVal = Float.parseFloat(inputView_.getText().toString());
+		        	return false;
+		        }catch (NumberFormatException nfe){
+		        	   // bad data
+		        	inputView_.setText(Float.toString(inFloat_.floatVal));
+	        		return false;
+		        }
+	        }
+	        if((event.getAction() == KeyEvent.ACTION_UP) &&
+	            (keyCode == KeyEvent.KEYCODE_ENTER) ){
+	        	View nextView = inputView_.focusSearch(View.FOCUS_RIGHT);
+	        	if(nextView!= null)
+	        		inputView_.focusSearch(View.FOCUS_RIGHT).requestFocus();
+	        	
+	        	return false;
+	        }
+	        return ((keyCode < KeyEvent.KEYCODE_0)
+	        	|| (keyCode > KeyEvent.KEYCODE_9))
+	        	&& ((keyCode != KeyEvent.KEYCODE_PERIOD)
+	        	|| (keyCode != KeyEvent.KEYCODE_DEL)
+	        	|| (keyCode != KeyEvent.KEYCODE_BACK));
+	    }
+	}
+	
+	private class floatWrapper{
+		public float floatVal;
+	}
+	
 	class IOIOMotoThread extends AbstractIOIOActivity.IOIOThread {
+		
 		private DigitalOutput led_;
-		
-		private float setpointInput_;
-		private float kpInput_;
-		private float kiInput_;
-		private float kdInput_;
-		private float betaInput_;
-		private float filterInput_;
-		private float windupInput_;
-		private boolean procButtonVal_;
-		
-		private double loopRate_;
 		private PIDController pidController_;
 		
 		public void setup() throws ConnectionLostException {
@@ -130,13 +174,13 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				
 				pidController_ = new PIDController(sm);
-				pidController_.setPID(	defaultkp_,
-										defaultki_, 
-										defaultkd_, 
-										defaultFilter_,
-										defaultBeta_,
-										defaultWindup_);
-				pidController_.setSetpoint(0);
+				pidController_.setPID(	kpInput_.floatVal,
+										kiInput_.floatVal, 
+										kdInput_.floatVal, 
+										filterInput_.floatVal,
+										betaInput_.floatVal,
+										windupInput_.floatVal);
+				pidController_.setSetpoint(setpointInput_.floatVal);
 				pidController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
 				pidController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
 				pidController_.powerOn();
@@ -158,27 +202,24 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		
 		public void loop() throws ConnectionLostException {
 			try {
+				//All of our input float vals should be updated through the UI process
 				//If reset button has been pressed, reset internal PID stuff
 				if(resetFlag_){
 					pidController_.internalPID_.reset();
 					//now that we've dealt with the flag, turn it back to false
 					resetFlag_=false;
 				}
+				pidController_.internalPID_.setPID(	kpInput_.floatVal, 
+													kiInput_.floatVal, 
+													kdInput_.floatVal, 
+													filterInput_.floatVal, 
+													betaInput_.floatVal, 
+													windupInput_.floatVal);
+				Log.d(LOGTAG_,"kpInput = " + kpInput_.toString() + "\tGiuValue: " + kpView_.getText().toString());
+				pidController_.internalPID_.setSetpoint(setpointInput_.floatVal);
 				//If toggle button is toggled pause PIDControl, otherwise unpause and update motor
 				pidController_.pause(!proccesingButton_.isChecked());
-				if(proccesingButton_.isChecked())
-				{
-					//read toggle button state/editText values
-					readInputs();
-					//set PidVals
-					pidController_.internalPID_.setPID(	kpInput_, 
-														kiInput_, 
-														kdInput_, 
-														filterInput_, 
-														betaInput_, 
-														windupInput_);
-					pidController_.internalPID_.setSetpoint(setpointInput_);
-				}
+				led_.write(!proccesingButton_.isChecked());
 				//PIDController won't actually update the motor if paused
 				boolean motorUpdated = pidController_.updateMotors(0);
 				//update the process variable text line
@@ -192,16 +233,6 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				pidController_.close();
 				throw e;
 			} 
-		}
-		
-		private void readInputs(){
-			setpointInput_ = Double.valueOf(setpointView_.getText().toString().trim()).floatValue();
-			kpInput_ = Double.valueOf(kpView_.getText().toString().trim()).floatValue();
-			kiInput_ = Double.valueOf(kiView_.getText().toString().trim()).floatValue();
-			kdInput_ = Double.valueOf(kdView_.getText().toString().trim()).floatValue();
-			betaInput_ = Double.valueOf(betaView_.getText().toString().trim()).floatValue();
-			filterInput_ = Double.valueOf(filterView_.getText().toString().trim()).floatValue();
-			windupInput_ = Double.valueOf(windupView_.getText().toString().trim()).floatValue();
 		}
 		
 		public void close(){
@@ -235,4 +266,5 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 			}
 		});
 	}
+	
 } 

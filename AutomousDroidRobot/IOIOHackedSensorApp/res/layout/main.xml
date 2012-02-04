@@ -14,7 +14,7 @@
 	</LinearLayout>
 
 	<LinearLayout
-	    android:id="@+id/linearLayout3"
+	    android:id="@+id/focusSteal"
 	    android:layout_width="match_parent"
 	    android:layout_height="52dp"
 	    android:gravity="center|clip_horizontal|fill_vertical" >
@@ -56,7 +56,7 @@
 	        android:maxLength="5"
 	        android:singleLine="true"
 	        android:text="@string/defaultSetpointVal"
-	        android:width="40dip" />
+	        android:width="40dip" android:selectAllOnFocus="true"/>
 
 	    <TextView
 	        android:id="@+id/textView1"
@@ -80,73 +80,66 @@
 
 	    <TextView
 	        android:id="@+id/textViewKp"
-	        android:layout_width="wrap_content"
+	        android:layout_width="0dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
 	        android:text="@string/kpTextBoxVal"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <EditText
 	        android:id="@+id/editTextKp"
-	        android:layout_width="100dp"
+	        android:layout_width="61dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.03"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
-	        android:singleLine="true"
+	        android:selectAllOnFocus="true"
 	        android:text="@string/defaultKpVal"
 	        android:width="40dip" >
-
-	        <requestFocus />
 	    </EditText>
 
-	</LinearLayout>
-
-	<LinearLayout
-	    android:id="@+id/linearLayout2"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content" >
-
 	    <TextView
-	        android:id="@+id/textViewKi"
-	        android:layout_width="wrap_content"
+	        android:id="@+id/TextView02"
+	        android:layout_width="0dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
 	        android:text="@string/kiTextBoxVal"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <EditText
 	        android:id="@+id/editTextKi"
-	        android:layout_width="100dp"
+	        android:layout_width="56dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.11"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
+	        android:selectAllOnFocus="true"
 	        android:singleLine="true"
 	        android:text="@string/defaultKiVal"
 	        android:width="40dip" />
-	</LinearLayout>
-
-	<LinearLayout
-	    android:id="@+id/linearLayout4"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content" >
 
 	    <TextView
 	        android:id="@+id/textView4"
-	        android:layout_width="wrap_content"
+	        android:layout_width="0dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
 	        android:text="@string/kdTextBoxVal"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <EditText
 	        android:id="@+id/editTextKd"
-	        android:layout_width="100dp"
+	        android:layout_width="61dp"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.03"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
-	        android:singleLine="true"
+	        android:selectAllOnFocus="true"
 	        android:text="@string/defaultKdVal"
-	        android:width="40dip" />
+	        android:width="40dip" >
+	    </EditText>
 	</LinearLayout>
 
 	<LinearLayout
@@ -158,43 +151,43 @@
 	        android:id="@+id/textViewBeta"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.02"
 	        android:text="@string/betaTextBoxVal"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <EditText
 	        android:id="@+id/editTextBeta"
-	        android:layout_width="100dp"
+	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.03"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
+	        android:selectAllOnFocus="true"
 	        android:text="@string/defaultBetaVal"
 	        android:width="40dip" />
-	</LinearLayout>
-
-	<LinearLayout
-	    android:id="@+id/LinearLayout02"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content" >
 
 	    <TextView
 	        android:id="@+id/textViewFilter"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
+	        android:layout_weight="0.02"
 	        android:text="@string/filterTextBoxVal"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <EditText
 	        android:id="@+id/editTextFilter"
-	        android:layout_width="100dp"
+	        android:layout_width="56dp"
 	        android:layout_height="wrap_content"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
+	        android:selectAllOnFocus="true"
 	        android:text="@string/defaultFilterVal"
-	        android:width="40dip" />
+	        android:width="40dip" >
+	    </EditText>
 	</LinearLayout>
 
 	<LinearLayout
@@ -211,12 +204,13 @@
 
 	    <EditText
 	        android:id="@+id/editTextWindup"
-	        android:layout_width="100dp"
+	        android:layout_width="60dp"
 	        android:layout_height="wrap_content"
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
+	        android:selectAllOnFocus="true"
 	        android:text="@string/defaultWindupVal"
 	        android:width="40dip" />
 	</LinearLayout>

@@ -14,7 +14,7 @@ import tweeter0830.pidcontrol.SaturationModel;
 public class PIDController implements SaturationModel{
 	String LOGTAG = "PIDController";
 	
-	private final boolean ISLOGGING = true;
+	private final boolean ISLOGGING = false;
 	public PID internalPID_ = new PID();
 	private TB661Driver motorDriver_ = new TB661Driver();
 	
@@ -82,16 +82,7 @@ public class PIDController implements SaturationModel{
 	}
 	
 	public double simulateSaturation(double unsatOutput){
-		double[] motorSpeeds = new double[2];
-		motorSpeeds = mapPIDOutputToMotor(unsatOutput, forwardSpeed_);
-		if(Math.abs(motorSpeeds[0])<=.15 && Math.abs(motorSpeeds[1])<=.15)
-			return 0;
-		else if(unsatOutput>1)
-			return 1;
-		else if(unsatOutput<-1)
-			return -1;
-		else 
-			return unsatOutput;
+		return mapRanges(unsatOutput, -1, 1, -1, 1);
 	}
 	
 	public boolean updateMotors(double speed) throws ConnectionLostException{
@@ -163,8 +154,19 @@ public class PIDController implements SaturationModel{
 		}
 	}
 	
+	private double mapRanges(double x, double in_min, double in_max, double out_min, double out_max)
+	{
+		double y = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+		if( y<out_min)
+			y = out_min;
+		else if(y>out_max)
+			y = out_max;			
+		return y;
+	}
+	
 	private double[] mapPIDOutputToMotor(double pidOutput, double speed){
-
+		final double motorStallVal = .1;
+		
 		double leftSpeed = speed - pidOutput/2;
 		double rightSpeed = speed + pidOutput/2;
 		double extraTurn;
@@ -188,6 +190,16 @@ public class PIDController implements SaturationModel{
 			leftSpeed = -1;
 			rightSpeed = rightSpeed + extraTurn;
 		}
+		if(leftSpeed < 0)
+			leftSpeed = leftSpeed-motorStallVal;
+		else if( leftSpeed>0)
+			leftSpeed = leftSpeed+motorStallVal;
+		
+		if(rightSpeed < 0)
+			rightSpeed = rightSpeed-motorStallVal;
+		else if( rightSpeed>0)
+			rightSpeed = rightSpeed+motorStallVal;
+		
 		motorSpeeds[0] = leftSpeed;
 		motorSpeeds[1] = rightSpeed;
 		return motorSpeeds;
