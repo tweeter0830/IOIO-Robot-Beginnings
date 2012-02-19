@@ -6,4 +6,8 @@
     <string name="loop_rate_label">Loop Rate: </string>
     <string name="defaultKpVal">0.5</string><string name="defaultKiVal">0</string><string name="defaultKdVal">0</string><string name="defaultBetaVal">1</string><string name="defaultFilterVal">0</string><string name="defaultWindupVal">0</string>
     <string name="kpTextBoxVal">Kp:</string><string name="kiTextBoxVal">Ki:</string><string name="kdTextBoxVal">Kd:</string><string name="filterTextBoxVal">Filter Coef:</string><string name="betaTextBoxVal">Beta[0-1]:</string><string name="windupCoefTextBoxVal">Windup Coef (1-22):</string><string name="setpointTextBoxVal">Setpoint:</string><string name="defaultSetpointVal">0</string><string name="curValueText">"Current Value: "</string><string name="currentTextBoxVal">N/A</string>
+    <string name="speedTextLabel">Speed: </string>
+    <string name="countTextLabel">Count:</string>
+    <string name="defaultCountVal">0</string>
+    <string name="defaultSpeedVal">0</string>
 </resources>

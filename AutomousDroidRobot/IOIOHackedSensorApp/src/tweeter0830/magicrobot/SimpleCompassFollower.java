@@ -26,6 +26,7 @@ import android.view.View.OnKeyListener;
 import android.util.Log;
 //Libraries for creating a motor driver class
 import tweeter0830.pidcontrol.PIDController;
+import tweeter0830.pidcontrol.Encoder;
 
 public class SimpleCompassFollower extends AbstractIOIOActivity {
 	public static final String LOGTAG_ = "Compass Follow";
@@ -40,6 +41,8 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 	private EditText windupView_;
 	private ToggleButton proccesingButton_;
 	private Button resetButton_;
+	private TextView countOutputView_;
+	private TextView speedOutputView_;
 	
 	private volatile boolean resetFlag_=false;
 	private volatile floatWrapper setpointInput_ = new floatWrapper();
@@ -71,6 +74,8 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
         windupView_ = 		(EditText)findViewById(R.id.editTextWindup);
         proccesingButton_ = (ToggleButton)findViewById(R.id.ProccesToggle);
         resetButton_ = 		(Button)findViewById(R.id.resetButton);
+        countOutputView_ = 	(TextView)findViewById(R.id.textViewCount);
+        speedOutputView_ = 	(TextView)findViewById(R.id.textViewSpeed);
         
         //Get default values for our inputs
         kpInput_.floatVal = Float.valueOf(this.getString(R.string.defaultKpVal).trim()).floatValue();
@@ -166,7 +171,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 		
 		private DigitalOutput led_;
 		private PIDController pidController_;
-		
+		private Encoder leftEncoder_;
 		public void setup() throws ConnectionLostException {
 			try {
 				SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -181,10 +186,12 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 										betaInput_.floatVal,
 										windupInput_.floatVal);
 				pidController_.setSetpoint(setpointInput_.floatVal);
-				pidController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
-				pidController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
+				pidController_.setMotor(1, 42, 43, 46, 38, 100, ioio_ );
+				pidController_.setMotor(2, 41, 40, 45, 38, 100, ioio_ );
 				pidController_.powerOn();
 				led_.write(false);
+				Encoder leftEncoder_ = new Encoder(ioio_, 31, 100);
+				
 				sleep(500);
 				
 				Log.d("Setup", "Got to the end of setup\n");
@@ -223,7 +230,8 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				//PIDController won't actually update the motor if paused
 				boolean motorUpdated = pidController_.updateMotors(0);
 				//update the process variable text line
-				setOutputText(pidController_.getProcessVar());
+				setOutputText(pidController_.getProcessVar(), leftEncoder_.getRotations(), leftEncoder_.getSpeed() );
+				
 				sleep(100);
 			} catch (InterruptedException e) {
 				ioio_.disconnect();
@@ -266,5 +274,15 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 			}
 		});
 	}
-	
+	private void setOutputText(final double outputVar, final double count, final double speed) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				DecimalFormat twoPlaces = new DecimalFormat("0.00");
+				PIDOutputView_.setText(twoPlaces.format(outputVar));
+				countOutputView_.setText(twoPlaces.format(count));
+				speedOutputView_.setText(twoPlaces.format(speed));
+			}
+		});
+	}
 } 

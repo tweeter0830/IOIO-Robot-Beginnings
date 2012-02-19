@@ -10,7 +10,7 @@ import android.util.Log;
 
 public class Encoder {
 	private static final String LOGTAG_ = "Encoder";
-	private static final boolean isLogging_ = false;
+	private static final boolean isLogging_ = true;
 	
 	private IOIO ioio_;
 	private boolean closed_ = false;
