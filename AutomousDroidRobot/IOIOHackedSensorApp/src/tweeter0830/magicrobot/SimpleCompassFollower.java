@@ -31,6 +31,7 @@ import tweeter0830.pidcontrol.Encoder;
 public class SimpleCompassFollower extends AbstractIOIOActivity {
 	public static final String LOGTAG_ = "Compass Follow";
 	
+	
 	private TextView PIDOutputView_;
 	private EditText setpointView_;
 	private EditText kpView_;
