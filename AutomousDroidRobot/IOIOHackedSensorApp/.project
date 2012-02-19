@@ -3,6 +3,10 @@
 	<name>SimpleCompassFollower</name>
 	<comment></comment>
 	<projects>
+		<project>IOIOLib</project>
+		<project>IOIOLibBT</project>
+		<project>MotorLibrary</project>
+		<project>PID</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
