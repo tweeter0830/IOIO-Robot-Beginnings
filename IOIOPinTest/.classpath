@@ -6,5 +6,7 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLibBT"/>
+	<classpathentry kind="lib" path="/IOIOLib/bin/ioiolib.jar"/>
+	<classpathentry kind="lib" path="/IOIOLibBT/bin/ioiolibbt.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

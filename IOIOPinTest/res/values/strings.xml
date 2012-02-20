@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello, IOIO User!</string>
     <string name="app_name">IOIO Pin Test</string>
+    <string name="Pin1Label">Pin1:</string>
+    <string name="Pin1Default">0</string>
 </resources>

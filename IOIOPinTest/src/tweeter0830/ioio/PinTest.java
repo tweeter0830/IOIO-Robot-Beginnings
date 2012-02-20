@@ -1,16 +1,19 @@
-package tweeter08330.ioio;
+package tweeter0830.ioio;
 
 import ioio.lib.android.AbstractIOIOActivity;
 import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.AnalogInput;
 import ioio.lib.api.exception.ConnectionLostException;
 import android.os.Bundle;
-import android.widget.ToggleButton;
+import android.widget.TextView;
+import tweeter0830.ioio.control.NumberPicker;
 
 /**
  * 
  */
 public class PinTest extends AbstractIOIOActivity {
-	private ToggleButton button_;
+	private NumberPicker numPicker1_;
+	private TextView num1PinText_;
 
 	/**
 	 * Called when the activity is first created. Here we normally initialize
@@ -20,7 +23,9 @@ public class PinTest extends AbstractIOIOActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		button_ = (ToggleButton) findViewById(R.id.button);
+		numPicker1_ = (NumberPicker) findViewById(R.id.numberPicker1);
+		num1PinText_ = (TextView) findViewById(R.id.textView2);
+		enableUi(false);
 	}
 
 	/**
@@ -33,7 +38,10 @@ public class PinTest extends AbstractIOIOActivity {
 	class IOIOThread extends AbstractIOIOActivity.IOIOThread {
 		/** The on-board LED. */
 		private DigitalOutput led_;
-
+		private DigitalOutput pin1Output_;
+		private AnalogInput analogInput1_;
+		private int pin1Num_;
+		private int oldPin1Num_ = 999;
 		/**
 		 * Called every time a connection with IOIO has been established.
 		 * Typically used to open pins.
@@ -45,7 +53,11 @@ public class PinTest extends AbstractIOIOActivity {
 		 */
 		@Override
 		protected void setup() throws ConnectionLostException {
-			led_ = ioio_.openDigitalOutput(0, true);
+			led_ = ioio_.openDigitalOutput(0, false);
+			analogInput1_ = ioio_.openAnalogInput(46);
+			pin1Num_ = numPicker1_.getValue();
+			pin1Output_ = ioio_.openDigitalOutput(1, false);
+			enableUi(true);
 		}
 
 		/**
@@ -58,10 +70,18 @@ public class PinTest extends AbstractIOIOActivity {
 		 */
 		@Override
 		protected void loop() throws ConnectionLostException {
-			led_.write(!button_.isChecked());
+			pin1Num_ = numPicker1_.getValue();
+			if( (pin1Num_!=oldPin1Num_) && (1<=pin1Num_ && pin1Num_<=45) )
+			{
+				pin1Output_.close();
+				pin1Output_ = ioio_.openDigitalOutput(pin1Num_, false);
+				oldPin1Num_= pin1Num_;
+			}	
 			try {
+				setText(Float.toString(analogInput1_.getVoltage()));
 				sleep(100);
 			} catch (InterruptedException e) {
+				enableUi(false);
 			}
 		}
 	}
@@ -74,5 +94,22 @@ public class PinTest extends AbstractIOIOActivity {
 	@Override
 	protected AbstractIOIOActivity.IOIOThread createIOIOThread() {
 		return new IOIOThread();
+	}
+	
+	private void enableUi(final boolean enable) {
+		runOnUiThread(new Runnable() {
+			//@Override
+			public void run() {
+				numPicker1_.setEnabled(enable);
+			}
+		});
+	}
+	private void setText(final String str) {
+		runOnUiThread(new Runnable() {
+			//@Override
+			public void run() {
+				num1PinText_.setText(str);
+			}
+		});
 	}
 }
