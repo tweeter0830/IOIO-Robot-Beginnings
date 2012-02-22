@@ -17,6 +17,8 @@ public class Encoder {
 	private AnalogInput analogPin_ = null;
 	private Timer timer_= new Timer();
 	
+	volatile private boolean direction_ = true;
+	
 	//this will be our count of how many times the encoders have switched values
 	//this is not the same thing as the number of times the wheel has been turned
 	//it needs to be converted for that
@@ -34,12 +36,20 @@ public class Encoder {
 		timer_.schedule(new EncoderTimer(), 0, (long)(1000/frequency));
 	}
 	
+	public void setDirection(boolean direction){
+		direction_ = direction;
+	}
 	public double getRotations(){
 		return internalCount_/6.0;
 	}
-	
+	public boolean getDirection(){
+		return direction_;
+	}
 	public double getSpeed(){
-		return speed_/6.0;
+		if(direction_ == true)
+			return speed_/6.0;
+		else
+			return -speed_/6.0;
 	}
 	
 	class EncoderTimer extends TimerTask{
@@ -53,13 +63,22 @@ public class Encoder {
 			try {
 				float inPinValue = analogPin_.read();
 				boolean newEncoderVal = analogToBool(inPinValue);
-				if(newEncoderVal==false && oldEncoderVal_==true){
+				if(newEncoderVal==false && oldEncoderVal_==true && direction_ == true){
+					internalCount_--;
+				}
+				else if(newEncoderVal==true && oldEncoderVal_==false && direction_ == false){
+					internalCount_--;
+				}
+				if( newEncoderVal==false && oldEncoderVal_==true){
 					internalCount_++;
 					long newEncoderTime = System.nanoTime();
 					if(oldEncoderTime_ == 0)
 						speed_ = 0;
-					else
+					else{
+						//This speed is encoder tics per second. It gets changed into revolutions
+						//per second on output
 						speed_ = 1/( (double)(newEncoderTime-oldEncoderTime_)/10000000000L);
+					}
 					oldEncoderTime_ = newEncoderTime;
 				}
 				oldEncoderVal_=newEncoderVal;

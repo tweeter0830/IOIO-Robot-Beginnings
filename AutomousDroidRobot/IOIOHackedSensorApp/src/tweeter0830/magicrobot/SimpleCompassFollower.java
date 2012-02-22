@@ -187,11 +187,11 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 										betaInput_.floatVal,
 										windupInput_.floatVal);
 				pidController_.setSetpoint(setpointInput_.floatVal);
-				pidController_.setMotor(1, 42, 43, 46, 38, 100, ioio_ );
-				pidController_.setMotor(2, 41, 40, 45, 38, 100, ioio_ );
+				pidController_.setMotor(1, 38, 39, 37, 33, 100, ioio_ );
+				pidController_.setMotor(2, 35, 36, 34, 33, 100, ioio_ );
 				pidController_.powerOn();
 				led_.write(false);
-				Encoder leftEncoder_ = new Encoder(ioio_, 31, 100);
+				leftEncoder_ = new Encoder(ioio_, 45, 100);
 				
 				sleep(500);
 				

@@ -41,8 +41,8 @@ public class MotorCalibrate extends AbstractIOIOActivity {
 		
 		public void setup() throws ConnectionLostException {
 			try {
-				motorController_.setMotor(1, 10, 11, 3, 6, 100, ioio_ );
-				motorController_.setMotor(2, 12, 13, 4, 6, 100, ioio_ );
+				motorController_.setMotor(1, 38, 39, 37, 33, 100, ioio_ );
+				motorController_.setMotor(2, 35, 36, 34, 33, 100, ioio_ );
 				motorController_.powerOn();
 				//Break both motors
 				motorController_.brake(3);

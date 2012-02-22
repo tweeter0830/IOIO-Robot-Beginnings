@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="/home/jacob/android-sdks/platforms/android-7/android.jar"/>
+	<classpathentry kind="lib" path="/home/jacob/Packages/android_sdks/platforms/android-7/android.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MotorLibrary"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLibBT"/>
