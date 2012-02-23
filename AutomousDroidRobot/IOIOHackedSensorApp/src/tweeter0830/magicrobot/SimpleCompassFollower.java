@@ -233,7 +233,7 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 				//update the process variable text line
 				setOutputText(pidController_.getProcessVar(), leftEncoder_.getRotations(), leftEncoder_.getSpeed() );
 				
-				sleep(100);
+				sleep(5);
 			} catch (InterruptedException e) {
 				ioio_.disconnect();
 				pidController_.close();
