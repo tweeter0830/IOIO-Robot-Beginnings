@@ -17,6 +17,8 @@ public class PIDController implements SaturationModel{
 	private final boolean ISLOGGING = false;
 	public PID internalPID_ = new PID();
 	private TB661Driver motorDriver_ = new TB661Driver();
+	private Encoder leftEncoder_ = null;
+	private Encoder rightEncoder_ = null;
 	
 	private SensorManager sm_;
 	private Sensor accelSensor_;
@@ -81,13 +83,17 @@ public class PIDController implements SaturationModel{
 		motorDriver_.setMotor(motorNum, pin1Num, pin2Num, pwmPinNum, standbyPinNum, frequency, ioio);
 	}
 	
+	public void setEncoders(IOIO ioio, int leftAnalogPin, int rightAnalogPin, double speed) throws ConnectionLostException, InterruptedException{
+		leftEncoder_= new Encoder(ioio, leftAnalogPin, speed );
+		rightEncoder_= new Encoder(ioio, leftAnalogPin, speed );
+	}
+	
 	public double simulateSaturation(double unsatOutput){
 		return mapRanges(unsatOutput, -1, 1, -1, 1);
 	}
 	
 	public boolean updateMotors(double speed) throws ConnectionLostException{
-		if(PIDPaused_)
-		{
+		if(PIDPaused_){
 			motorDriver_.brake(3);
 			return false;
 		}
@@ -132,8 +138,7 @@ public class PIDController implements SaturationModel{
 				if( !PIDPaused_)
 					internalPID_.updateProcessVar(azOrientation_, System.nanoTime());
 			}
-			if(ISLOGGING && count_%20==0)
-			{
+			if(ISLOGGING && count_%20==0){
 				Log.v(LOGTAG, "SensorName:"+event.sensor.getName() + "\tAccuracy: "+event.accuracy+"/n");
 				Log.v(LOGTAG, "AccelVals: " + accelVector_[0] +"\t"+ accelVector_[1] +"\t"+ accelVector_[2] +"\n");
 				Log.v(LOGTAG, "MagVals: " + magVector_[0] +"\t"+ magVector_[1] +"\t"+ magVector_[2] +"\n");
