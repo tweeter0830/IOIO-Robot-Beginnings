@@ -94,7 +94,7 @@
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:text="@string/defaultKpVal"
 	        android:width="40dip" >
 	    </EditText>
@@ -115,7 +115,7 @@
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:singleLine="true"
 	        android:text="@string/defaultKiVal"
 	        android:width="40dip" />
@@ -136,7 +136,7 @@
 	        android:inputType="numberDecimal"
 	        android:lines="1"
 	        android:maxLength="5"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:text="@string/defaultKdVal"
 	        android:width="40dip" >
 	    </EditText>
@@ -164,7 +164,7 @@
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:text="@string/defaultBetaVal"
 	        android:width="40dip" />
 
@@ -184,7 +184,7 @@
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:text="@string/defaultFilterVal"
 	        android:width="40dip" >
 	    </EditText>
@@ -210,7 +210,7 @@
 	        android:lines="1"
 	        android:maxLength="5"
 	        android:singleLine="true"
-	        android:selectAllOnFocus="true"
+	        android:selectAllOnFocus="false"
 	        android:text="@string/defaultWindupVal"
 	        android:width="40dip" />
 	</LinearLayout>

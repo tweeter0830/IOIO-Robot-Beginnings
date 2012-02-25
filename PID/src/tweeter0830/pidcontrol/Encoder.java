@@ -55,6 +55,7 @@ public class Encoder {
 	class EncoderTimer extends TimerTask{
 		private boolean oldEncoderVal_;
 		private long oldEncoderTime_ = 0;
+		private long oldTimeChange_ = 0;
 		
 		public EncoderTimer() throws InterruptedException, ConnectionLostException{
 			oldEncoderVal_ = analogToBool(analogPin_.read());
@@ -64,22 +65,26 @@ public class Encoder {
 				float inPinValue = analogPin_.read();
 				boolean newEncoderVal = analogToBool(inPinValue);
 				if(newEncoderVal==false && oldEncoderVal_==true && direction_ == true){
-					internalCount_--;
+					internalCount_++;
 				}
 				else if(newEncoderVal==true && oldEncoderVal_==false && direction_ == false){
 					internalCount_--;
 				}
-				if( newEncoderVal==false && oldEncoderVal_==true){
-					internalCount_++;
-					long newEncoderTime = System.nanoTime();
-					if(oldEncoderTime_ == 0)
-						speed_ = 0;
-					else{
-						//This speed is encoder tics per second. It gets changed into revolutions
-						//per second on output
-						speed_ = 1/( (double)(newEncoderTime-oldEncoderTime_)/10000000000L);
-					}
+				
+				long newEncoderTime = System.nanoTime();
+				if(oldEncoderTime_ == 0){
+					speed_ = 0;
 					oldEncoderTime_ = newEncoderTime;
+				}else if( newEncoderVal==false && oldEncoderVal_==true){
+					//This speed is encoder tics per second. It gets changed into revolutions
+					//per second on output
+					speed_ = 1/( (double)(newEncoderTime-oldEncoderTime_)/10000000000L);
+					oldTimeChange_ = newEncoderTime-oldEncoderTime_;
+					oldEncoderTime_ = newEncoderTime;
+				}else if(newEncoderTime-oldEncoderTime_>oldTimeChange_){
+					speed_ = 1/( (double)(newEncoderTime-oldEncoderTime_)/10000000000L);
+					if(speed_<0.1)
+						speed_ = 0;
 				}
 				oldEncoderVal_=newEncoderVal;
 				if(isLogging_)
