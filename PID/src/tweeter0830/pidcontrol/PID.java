@@ -22,6 +22,8 @@ public class PID {
 	private double filterCoef_ = 0;
 	private double beta_ = 1;
 	private double windupFactor_ = 0;
+	private double lowOutputLimit_ = -1;
+	private double highOutputLimit_ = 1;
 	
 	//These are updated every time updateInput is called
 	//Controller coefficients 
@@ -65,6 +67,11 @@ public class PID {
 		windupFactor_ = windupFactor;
 	}
 	
+	public void setLimits(double lowLimitIn, double highLimitIn){
+		lowOutputLimit_ = lowLimitIn;
+		highOutputLimit_ = highLimitIn;
+	}
+	
 	public void attachSatModel(SaturationModel satModel){
 		externalSatModel_ = satModel;
 		externalSatModelSet_ = true;
@@ -80,6 +87,10 @@ public class PID {
 	
 	public void setSetKi(double ki){
 		ki_ = ki;
+	}
+	
+	public void setSetKd(double kd){
+		kd_ = kd;
 	}
 	
 	public void setFilterCoef(double filterCoef){
@@ -160,10 +171,10 @@ public class PID {
 	}
 	
 	private double simulateSimpleSat(double unsatOutput){
-		if(unsatOutput>1)
-			return 1;
-		else if(unsatOutput<-1)
-			return -1;
+		if(unsatOutput>highOutputLimit_)
+			return highOutputLimit_;
+		else if(unsatOutput<lowOutputLimit_)
+			return lowOutputLimit_;
 		else 
 			return unsatOutput;
 	}
