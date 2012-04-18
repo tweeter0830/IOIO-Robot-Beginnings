@@ -1,5 +1,6 @@
 package tweeter0830.boxbot;
 
+import tweeter0830.pidcontrol.PID;
 import tweeter0830.boxbot.ArduConnect;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,39 +45,58 @@ public class IOIOSerial extends AbstractIOIOActivity {
 		private Uart arduUart_;
 		private InputStream arduIn_;
 		private OutputStream arduOut_;
+		private PID leftMotorPID_;
+		private PID rightMotorPID_;
 		
 		@Override
 		public void setup() throws ConnectionLostException {
 			try {
-				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
-				
-//				DigitalInput.Spec rxPin = new DigitalInput.Spec(6,DigitalInput.Spec.Mode.PULL_UP);
-//				DigitalOutput.Spec txPin = new DigitalOutput.Spec(7,DigitalOutput.Spec.Mode.OPEN_DRAIN);
 				enableUi(true);
+				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
 				arduUart_ = ioio_.openUart(6, 7, 115200, Uart.Parity.NONE, Uart.StopBits.ONE);
 				arduIn_ = arduUart_.getInputStream();
 				arduOut_ = arduUart_.getOutputStream();
 				arduConnect_ = new ArduConnect(arduIn_, arduOut_);
+				leftMotorPID_ = new PID();
+				rightMotorPID_ = new PID();
+				leftMotorPID_.setPID(.2, 20, 0);
+				rightMotorPID_.setPID(.2, 20, 0);
+				leftMotorPID_.setLimits(-255, 255);
+				rightMotorPID_.setLimits(-255, 255);
+				arduConnect_.setMode(ArduConnect.Mode.PWM);
+				leftMotorPID_.setSetpoint(0);
+				rightMotorPID_.setSetpoint(0);
+			} catch (IOException e){
+				enableUi(false);
+				e.printStackTrace();
 			} catch (ConnectionLostException e) {
 				enableUi(false);
 				throw e;
 			}
 		}
+		long leftEncoder, rightEncoder, loopTime;
+		int leftPWM, rightPWM;
 		
 		@Override
 		public void loop() throws ConnectionLostException {
 			try {
-				Log.v(LOGTAG_, "Start Process");
-				Log.v(LOGTAG_, "Change Mode");
-				arduConnect_.setMode(ArduConnect.Mode.SPEED);
-				//arduConnect_.setMode(ArduConnect.Mode.PWM);
-				//arduConnect_.updateEncoders();
-				//arduConnect_.updateSpeed();
-				arduConnect_.setSpeed(1.0, 1.0);
-				arduConnect_.setGains(20, 30, 0);
-				Log.v(LOGTAG_, "Process Finished");
+				loopTime = System.nanoTime();
+				//Log.v(LOGTAG_, "Started Loop @ "+loopTime);
+				arduConnect_.updateEncoders();
+				leftEncoder = arduConnect_.getLeftEncoder();
+				Log.v(LOGTAG_, "Left Encoder: "+leftEncoder);
+				rightEncoder = arduConnect_.getRightEncoder();
+				leftMotorPID_.updateProcessVar(leftEncoder, loopTime);
+				rightMotorPID_.updateProcessVar(rightEncoder, loopTime);
+				//Oh dear god, the output doesn't match what the PID is outputting. May cause errors
+				leftPWM = (int)leftMotorPID_.outputUpdate();
+				rightPWM = (int)rightMotorPID_.outputUpdate();
+				Log.v(LOGTAG_, "Left PWM: "+leftPWM);
+				arduConnect_.setPWM(leftPWM, rightPWM);
+				loopTime = System.nanoTime();
+				//Log.v(LOGTAG_, "Ended Loop @ "+loopTime+"\n");
 				led_.write(!toggleButton_.isChecked());
-				sleep(1000);
+				sleep(1);
 			} catch (InterruptedException e) {
 				ioio_.disconnect();
 			} catch (ConnectionLostException e) {

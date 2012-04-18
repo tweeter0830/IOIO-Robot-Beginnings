@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import android.util.Log;
 
 public class ArduConnect {
-	private static final boolean ISLOGGING = true;
+	private static final boolean ISLOGGING = false;
 	private static final String LOGTAG_ = "Compass Follow";
 	
 	private InputStream arduIn_;
@@ -42,13 +42,14 @@ public class ArduConnect {
 	public void updateEncoders() throws IOException{
 		byte bufferIn[]= new byte[8];
 		arduOut_.write('1');
-		int bufLength = arduIn_.read(bufferIn, 0, 8);
+		//int bufLength = 
+		blockingRead(bufferIn, 8);
 		leftEncoder_ = bytesToLong(bufferIn,0);
 		rightEncoder_= bytesToLong(bufferIn,4);
 		if(ISLOGGING){
 			Log.v(LOGTAG_,"Enc Buffer: "+bufferIn[0]+' '+bufferIn[1]+' '+bufferIn[2]+' '+
 									     bufferIn[3]+' '+bufferIn[4]+' '+bufferIn[5]+' '+bufferIn[6]+' '+bufferIn[7]);
-			Log.v(LOGTAG_,"Length: "+bufLength);
+			//Log.v(LOGTAG_,"Length: "+bufLength);
 			Log.v(LOGTAG_,"Left Encoder: "+leftEncoder_);
 			Log.v(LOGTAG_,"Right Encoder: "+rightEncoder_);
 		}
@@ -56,13 +57,14 @@ public class ArduConnect {
 	public void updateSpeed() throws IOException{
 		byte bufferIn[]= new byte[8];
 		arduOut_.write('2');
-		int bufLength = arduIn_.read(bufferIn, 0, 8);
+		//int bufLength = arduIn_.read(bufferIn, 0, 8);
+		blockingRead(bufferIn, 8);
 		leftSpeed_ = ((double)bytesToLong(bufferIn,0))/10000;
 		rightSpeed_= ((double)bytesToLong(bufferIn,4))/10000;
 		if(ISLOGGING){
 			Log.v(LOGTAG_,"Spd Buffer: "+bufferIn[0]+' '+bufferIn[1]+' '+bufferIn[2]+' '+
 									     bufferIn[3]+' '+bufferIn[4]+' '+bufferIn[5]+' '+bufferIn[6]+' '+bufferIn[7]);
-			Log.v(LOGTAG_,"Length: "+bufLength);
+			//Log.v(LOGTAG_,"Length: "+bufLength);
 			Log.v(LOGTAG_,"Left Speed: "+leftSpeed_);
 			Log.v(LOGTAG_,"Right Speed: "+rightSpeed_);
 		}
@@ -106,6 +108,18 @@ public class ArduConnect {
 		arduOut_.write('5');
 		arduOut_.write(bufferOut);
 	}
+	public long getLeftEncoder(){
+		return leftEncoder_;
+	}
+	public long getRightEncoder(){
+		return rightEncoder_;
+	}
+	public double getLeftSpeed(){
+		return leftSpeed_;
+	}
+	public double getRightSpeed(){
+		return rightSpeed_;
+	}
 	private void intToBytes(int intIn, byte arrayIn[], int startIndex){
 		arrayIn[startIndex] = (byte)(intIn>>0);
 		arrayIn[startIndex+1] = (byte)(intIn>>8);
@@ -124,5 +138,15 @@ public class ArduConnect {
 		longOut = (((int)arrayIn[startIndex+2] & 0xff)<<16)+longOut;
 		longOut = (((int)arrayIn[startIndex+3] & 0xff)<<24)+longOut;
 	        return longOut;
+	}
+	private void blockingRead( byte[] inBuffer, int length) throws IOException{
+		int count=0; 
+		while( count<length ){
+			int byteIn = arduIn_.read();
+			if( byteIn != -1 ){
+				inBuffer[count] = (byte)byteIn;
+				count++;
+			}
+		}
 	}
 }
