@@ -57,20 +57,16 @@ public class IOIOSerial extends AbstractIOIOActivity {
 				arduIn_ = arduUart_.getInputStream();
 				arduOut_ = arduUart_.getOutputStream();
 				arduConnect_ = new ArduConnect(arduIn_, arduOut_);
-				leftMotorPID_ = new PID();
-				rightMotorPID_ = new PID();
-				leftMotorPID_.setPID(.2, 20, 0);
-				rightMotorPID_.setPID(.2, 20, 0);
-				leftMotorPID_.setLimits(-255, 255);
-				rightMotorPID_.setLimits(-255, 255);
-				arduConnect_.setMode(ArduConnect.Mode.PWM);
-				leftMotorPID_.setSetpoint(0);
-				rightMotorPID_.setSetpoint(0);
-			} catch (IOException e){
-				enableUi(false);
-				e.printStackTrace();
+				Log.v(LOGTAG_,"Establishing Connection");
+				arduConnect_.establishConnection();
+				Log.v(LOGTAG_,"Connection Established");
+				//arduConnect_.setMode(ArduConnect.Mode.PWM);
+//			} catch (IOException e){
+//				enableUi(false);
+//				e.printStackTrace();
 			} catch (ConnectionLostException e) {
 				enableUi(false);
+				ioio_.disconnect();
 				throw e;
 			}
 		}
@@ -80,28 +76,21 @@ public class IOIOSerial extends AbstractIOIOActivity {
 		@Override
 		public void loop() throws ConnectionLostException {
 			try {
-				loopTime = System.nanoTime();
-				//Log.v(LOGTAG_, "Started Loop @ "+loopTime);
-				arduConnect_.updateEncoders();
-				leftEncoder = arduConnect_.getLeftEncoder();
-				Log.v(LOGTAG_, "Left Encoder: "+leftEncoder);
-				rightEncoder = arduConnect_.getRightEncoder();
-				leftMotorPID_.updateProcessVar(leftEncoder, loopTime);
-				rightMotorPID_.updateProcessVar(rightEncoder, loopTime);
-				//Oh dear god, the output doesn't match what the PID is outputting. May cause errors
-				leftPWM = (int)leftMotorPID_.outputUpdate();
-				rightPWM = (int)rightMotorPID_.outputUpdate();
-				Log.v(LOGTAG_, "Left PWM: "+leftPWM);
-				arduConnect_.setPWM(leftPWM, rightPWM);
-				loopTime = System.nanoTime();
-				//Log.v(LOGTAG_, "Ended Loop @ "+loopTime+"\n");
+				//loopTime = System.nanoTime();
+				//Log.v(LOGTAG_,"Start of Loop");
+				arduConnect_.updateCurrent();
+				float progBarVal = seekBar_.getProgress();
+				float maxProg = seekBar_.getMax();
+				int PWMOut = (int)((float)510/maxProg*(progBarVal)-255);
+				arduConnect_.setPWM(PWMOut, 0);
+				Log.v(LOGTAG_, "BarVal: "+progBarVal+" maxProg: "+maxProg+" leftCurrent: "+arduConnect_.getLeftCurrent());
 				led_.write(!toggleButton_.isChecked());
-				sleep(1);
+				sleep(10);
 			} catch (InterruptedException e) {
 				ioio_.disconnect();
-			} catch (ConnectionLostException e) {
-				enableUi(false);
-				throw e;
+//			} catch (ConnectionLostException e) {
+//				enableUi(false);
+//				throw e;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
