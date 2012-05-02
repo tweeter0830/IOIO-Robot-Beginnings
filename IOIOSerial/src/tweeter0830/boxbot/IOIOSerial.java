@@ -73,6 +73,7 @@ public class IOIOSerial extends AbstractIOIOActivity {
 		long leftEncoder, rightEncoder, loopTime;
 		int leftPWM, rightPWM;
 		
+		
 		@Override
 		public void loop() throws ConnectionLostException {
 			try {
