@@ -7,10 +7,14 @@ package tweeter0830.magicrobot;
 //TODO look up how to make a class multithread safe
 
 //import ioio.lib.api.AnalogInput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
+import ioio.lib.api.Uart;
 //import ioio.lib.api.PwmOutput;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.android.AbstractIOIOActivity;
@@ -25,6 +29,8 @@ import android.widget.ToggleButton;
 import android.view.View.OnKeyListener;
 import android.util.Log;
 //Libraries for creating a motor driver class
+import tweeter0830.boxbot.ArduConnect;
+import tweeter0830.pidcontrol.PID;
 import tweeter0830.pidcontrol.PIDController;
 import tweeter0830.pidcontrol.Encoder;
 
@@ -106,23 +112,23 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
         enableUi(false);
     }
     
-	@Override
-	protected void onStop() {
-		if(IOIOThread_!=null)
-			IOIOThread_.close();
-		
-		Log.v(LOGTAG_, "Stopped\n");
-		super.onStop();
-	}
+//	@Override
+//	protected void onStop() {
+//		if(IOIOThread_!=null)
+//			IOIOThread_.close();
+//		
+//		Log.v(LOGTAG_, "Stopped\n");
+//		super.onStop();
+//	}
 	
-	@Override
-	protected void onDestroy() {
-		if(IOIOThread_!=null)
-			IOIOThread_.close();
-		
-		Log.v(LOGTAG_, "Destroyed\n");
-		super.onDestroy();
-	}	
+//	@Override
+//	protected void onDestroy() {
+//		if(IOIOThread_!=null)
+//			IOIOThread_.close();
+//		
+//		Log.v(LOGTAG_, "Destroyed\n");
+//		super.onDestroy();
+//	}	
 	
 	class assignEditTextListener implements OnKeyListener{
 
@@ -171,82 +177,114 @@ public class SimpleCompassFollower extends AbstractIOIOActivity {
 	class IOIOMotoThread extends AbstractIOIOActivity.IOIOThread {
 		
 		private DigitalOutput led_;
-		private PIDController pidController_;
-		private Encoder leftEncoder_;
+		private ArduConnect arduConnect_;
+		private Uart arduUart_;
+		private InputStream arduIn_;
+		private OutputStream arduOut_;
+		private PID leftMotorPID_;
+		private PID rightMotorPID_;
+		
 		public void setup() throws ConnectionLostException {
 			try {
-				SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
-				
+				//SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+				enableUi(true);
+				Log.v("Setup", "Got to the beginning of setup\n");
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
+				arduUart_ = ioio_.openUart(6, 7, 115200, Uart.Parity.NONE, Uart.StopBits.ONE);
+				arduIn_ = arduUart_.getInputStream();
+				arduOut_ = arduUart_.getOutputStream();
+				arduConnect_ = new ArduConnect(arduIn_, arduOut_);
+				leftMotorPID_ = new PID();
+				rightMotorPID_ = new PID();
+				leftMotorPID_.setPID(.2, 20, 0);
+				rightMotorPID_.setPID(.2, 20, 0);
+				leftMotorPID_.setLimits(-255, 255);
+				rightMotorPID_.setLimits(-255, 255);
+				arduConnect_.setMode(ArduConnect.Mode.PWM);
+				leftMotorPID_.setSetpoint(0);
+				rightMotorPID_.setSetpoint(0);
 				
-				pidController_ = new PIDController(sm);
-				pidController_.setPID(	kpInput_.floatVal,
-										kiInput_.floatVal, 
-										kdInput_.floatVal, 
-										filterInput_.floatVal,
-										betaInput_.floatVal,
-										windupInput_.floatVal);
-				pidController_.setSetpoint(setpointInput_.floatVal);
-				pidController_.setMotor(1, 38, 39, 37, 33, 100, ioio_ );
-				pidController_.setMotor(2, 35, 36, 34, 33, 100, ioio_ );
-				pidController_.powerOn();
-				led_.write(false);
-				leftEncoder_ = new Encoder(ioio_, 45, 100);
-				
-				sleep(500);
-				
-				Log.d("Setup", "Got to the end of setup\n");
+				Log.v(LOGTAG_, "Establishing Connection with Arduino");
+				arduConnect_.establishConnection();
+				Log.v(LOGTAG_, "Connection Established");
+				Log.v(LOGTAG_, "Got to the end of setup\n");
 				enableUi(true);
 			} catch (ConnectionLostException e) {
 				enableUi(false);
-				ioio_.disconnect();
-				pidController_.close();
 				throw e;
-			} catch (InterruptedException e) {
-				ioio_.disconnect();
-				pidController_.close();
+//			} catch (InterruptedException e) {
+//				ioio_.disconnect();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
+		long leftEncoder, rightEncoder, loopTime;
+		double leftSpeed, rightSpeed;
+		int leftPWM, rightPWM;
 		
 		public void loop() throws ConnectionLostException {
 			try {
 				//All of our input float vals should be updated through the UI process
 				//If reset button has been pressed, reset internal PID stuff
 				if(resetFlag_){
-					pidController_.internalPID_.reset();
+					leftMotorPID_.reset();
+					rightMotorPID_.reset();
 					//now that we've dealt with the flag, turn it back to false
 					resetFlag_=false;
 				}
-				pidController_.internalPID_.setPID(	kpInput_.floatVal, 
-													kiInput_.floatVal, 
-													kdInput_.floatVal, 
-													filterInput_.floatVal, 
-													betaInput_.floatVal, 
-													windupInput_.floatVal);
-				Log.d(LOGTAG_,"kpInput = " + kpInput_.toString() + "\tGiuValue: " + kpView_.getText().toString());
-				pidController_.internalPID_.setSetpoint(setpointInput_.floatVal);
-				//If toggle button is toggled pause PIDControl, otherwise unpause and update motor
-				pidController_.pause(!proccesingButton_.isChecked());
-				led_.write(!proccesingButton_.isChecked());
-				//PIDController won't actually update the motor if paused
-				boolean motorUpdated = pidController_.updateMotors(0);
-				//update the process variable text line
-				setOutputText(pidController_.getProcessVar(), leftEncoder_.getRotations(), leftEncoder_.getSpeed() );
+				leftMotorPID_.setPID(	kpInput_.floatVal, 
+										kiInput_.floatVal, 
+										kdInput_.floatVal, 
+										filterInput_.floatVal, 
+										betaInput_.floatVal, 
+										windupInput_.floatVal);
+				rightMotorPID_.setPID(	kpInput_.floatVal, 
+										kiInput_.floatVal, 
+										kdInput_.floatVal, 
+										filterInput_.floatVal, 
+										betaInput_.floatVal, 
+										windupInput_.floatVal);
+				leftMotorPID_.setSetpoint(setpointInput_.floatVal);
+				rightMotorPID_.setSetpoint(setpointInput_.floatVal);
 				
-				sleep(5);
-			} catch (InterruptedException e) {
-				ioio_.disconnect();
-				pidController_.close();
-			} catch (ConnectionLostException e) {
-				enableUi(false);
-				pidController_.close();
-				throw e;
-			} 
-		}
-		
-		public void close(){
-			if(pidController_!=null)
-				pidController_.close();
+				loopTime = System.nanoTime();
+				//Log.v(LOGTAG_, "Started Loop @ "+loopTime);
+				arduConnect_.updateEncoders();
+				leftEncoder = arduConnect_.getLeftEncoder();
+				rightEncoder = arduConnect_.getRightEncoder();
+				arduConnect_.updateSpeed();
+				leftSpeed = arduConnect_.getLeftSpeed();
+				rightSpeed = arduConnect_.getRightSpeed();
+				//Log.v(LOGTAG_, "Processing: "+proccesingButton_.isChecked());
+				if(proccesingButton_.isChecked()){
+					leftMotorPID_.updateProcessVar(leftSpeed, loopTime);
+					rightMotorPID_.updateProcessVar(rightSpeed, loopTime);
+					//Oh dear god, the output doesn't match what the PID is outputting. May cause errors
+					leftPWM = (int)leftMotorPID_.outputUpdate();
+					rightPWM = (int)rightMotorPID_.outputUpdate();
+					arduConnect_.setPWM(leftPWM, 0);
+				}
+				else{
+					arduConnect_.setPWM(0, 0);
+				}
+				//if( leftSpeed < 0){
+					Log.v(LOGTAG_, "Left Speed: "+leftSpeed+"PWM: "+leftPWM);
+				//}
+				//Log.v(LOGTAG_, "Left Speed: "+leftSpeed);
+				//Log.v(LOGTAG_, "Left PWM: "+leftPWM);
+				setOutputText(leftPWM, leftEncoder, leftSpeed);
+				//sleep(1);
+//			} catch (InterruptedException e) {
+//				ioio_.disconnect();
+//			} catch (ConnectionLostException e) {
+//				enableUi(false);
+//				throw e;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				Log.w(LOGTAG_, e.getMessage());
+				arduConnect_.establishConnection();
+			}
 		}
 	}
 

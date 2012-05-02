@@ -10,5 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/IOIOLibBT"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MotorLibrary"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/PID"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/IOIOSerial"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
