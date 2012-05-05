@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="/IOIOLib/bin/ioiolib.jar"/>
 	<classpathentry kind="lib" path="/IOIOLibAccessory/bin/ioiolibaccessory.jar"/>
 	<classpathentry kind="lib" path="/IOIOLibBT/bin/ioiolibbt.jar"/>
+	<classpathentry kind="lib" path="/home/jacob/Packages/ejml-0.19-nogui.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
