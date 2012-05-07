@@ -37,6 +37,7 @@ public class DiffDriveExtendedKF{
     double L_;
     double D_;
     double inititalLon_;
+    
 //    public void configure(SimpleMatrix F, SimpleMatrix Q, SimpleMatrix H) {
 //    	this.F = F;
 //    	this.Q = Q;
@@ -68,7 +69,6 @@ public class DiffDriveExtendedKF{
     }
 
     public void predict(double timeChange) {
-
         // x = F x
     	predictState(x,a,timeChange);
     	x.set(a);
@@ -79,7 +79,6 @@ public class DiffDriveExtendedKF{
     }
 
     public void update(SimpleMatrix z, SimpleMatrix R) {
-
         // y = z - h(x)
     	calch(z, a);
         y = z.minus(a);
@@ -105,6 +104,7 @@ public class DiffDriveExtendedKF{
     public SimpleMatrix getCovariance() {
         return P;
     }
+    
     private void calcF(final SimpleMatrix inState, SimpleMatrix F, double timeChange){
     	double easting = inState.get(1);
     	double northing = inState.get(2);
@@ -120,6 +120,7 @@ public class DiffDriveExtendedKF{
     	F.setRow(5, 1, 			0, 0, 0, 0,heading,timeChange);
     	F.setRow(6, 1, 			0, 0, 0, 0,0,headingDot);
     }
+    
     private void predictState(final SimpleMatrix inState, SimpleMatrix outState, double timeChange){
     	double easting = inState.get(1);
     	double northing = inState.get(2);
@@ -135,6 +136,7 @@ public class DiffDriveExtendedKF{
     	outState.set(5,headingDot*timeChange+heading);
     	outState.set(6, headingDot);
     }
+    
     private void calcH(final SimpleMatrix inState, SimpleMatrix H){
 //    	double easting = inState.get(1);
 //    	double northing = inState.get(2);
@@ -150,6 +152,7 @@ public class DiffDriveExtendedKF{
     	H.setRow(5, 1, 			0,0,0,1,0,0);
     	H.setRow(6, 1, 			0,0,0,0,1,0);
     }
+    
     private void calch(final SimpleMatrix inState, SimpleMatrix outh){
     	double easting = inState.get(1);
     	double northing = inState.get(2);
