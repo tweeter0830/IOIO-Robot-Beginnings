@@ -19,25 +19,22 @@ public abstract class ExtendedKF{
 
    // kinematics description
    private SimpleMatrix F;
-   private SimpleMatrix Q;
+   protected SimpleMatrix Q;//Needs to be set
    private SimpleMatrix H;
 
    // System state estimate
-   private SimpleMatrix x;
-   private SimpleMatrix P;
+   protected SimpleMatrix x;//Needs to be set
+   protected SimpleMatrix P;//Needs to be set
+   
+   protected SimpleMatrix R;//Needs to be set
 
    // these are pre-declared for efficiency reasons
    private SimpleMatrix a,b;
    private SimpleMatrix y,S,S_inv,c,d;
    private SimpleMatrix K;
 
-   public void setState(SimpleMatrix x, SimpleMatrix P) {
-               this.x.set(x);
-               this.P.set(P);
-   }
-
    public void predict(double timeChange) {
-       // x = F x
+       // x = f(x)
        calcf(x,a,timeChange);
        x.set(a);
 
@@ -46,13 +43,15 @@ public abstract class ExtendedKF{
        P = F.mult(P).mult(F.transpose()).plus(Q);
    }
 
-   public void update(SimpleMatrix z, SimpleMatrix R, final boolean[] MeasFlags) {
+   public void update(SimpleMatrix z, boolean[] MeasFlags) {
        // y = z - h(x)
-       calch(z, a, MeasFlags);
+       calch(z, a);
        y = z.minus(a);
+       wipeRows(y, MeasFlags);
 
        // S = H P H' + R
-       calcH(z, H, MeasFlags);
+       calcH(z, H);
+       wipeRows(H, MeasFlags);
        S = H.mult(P).mult(H.transpose()).plus(R);
 
        // K = PH'S^(-1)
@@ -65,6 +64,15 @@ public abstract class ExtendedKF{
        P = P.minus(K.mult(H).mult(P));
    }
 
+   private void wipeRows(SimpleMatrix inMatrix, final boolean[] MeasFlags){
+	   for(int row = 1; row<=inMatrix.numRows(); row++){
+		   for(int col = 1; col<=inMatrix.numCols();col++){
+			   if( !MeasFlags[row-1])
+				   inMatrix.set(row, col, 0);
+		   }
+	   }
+   }
+   
    public SimpleMatrix getState() {
        return x;
    }
@@ -77,7 +85,7 @@ public abstract class ExtendedKF{
 
    protected abstract void calcf(final SimpleMatrix inState, SimpleMatrix outState, double timeChange);
 
-   protected abstract void calcH(final SimpleMatrix inState, SimpleMatrix H, boolean[] MeasFlags);
+   protected abstract void calcH(final SimpleMatrix inState, SimpleMatrix H);
 
-   protected abstract void calch(final SimpleMatrix inState, SimpleMatrix h, boolean[] MeasFlags);
+   protected abstract void calch(final SimpleMatrix inState, SimpleMatrix h);
 }
