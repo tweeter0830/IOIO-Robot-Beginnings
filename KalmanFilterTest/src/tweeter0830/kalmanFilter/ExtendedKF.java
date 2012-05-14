@@ -55,44 +55,56 @@ public abstract class ExtendedKF{
 	   //Log.v(LOGTAG_, "Update x in: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
 	   //Log.v(LOGTAG_, "Update P in: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
 	   Log.v(LOGTAG_, "Update z in: "+z.get(0)+' '+z.get(1)+' '+z.get(2)+' '+z.get(3)+' '+z.get(4)+' '+z.get(5));
-       // y = z - h(x)
+       
+	   /*** y = z - h(x) ***/
        calch(z, a);
        wipeRows(a, MeasFlags);
        y = z.minus(a);
        //Log.v(LOGTAG_, "Update y pre wipe: "+y.toString());
-       
        //Log.v(LOGTAG_, "Update y post wipe: "+y.toString());
        
-       // S = H P H' + R
+       /*** S = H P H' + R ***/
        calcH(z, H);
        Log.v(LOGTAG_, "Update H pre wipe: "+H.toString());
        wipeRows(H, MeasFlags);
        Log.v(LOGTAG_, "Update H post wipe: "+H.toString());
        S = (H.mult(P).mult(H.transpose())).plus(R);
        Log.v(LOGTAG_, "Update S "+S.toString());
-       // K = PH'S^(-1)
+       
+       /*** K = PH'S^(-1) ***/
        K = P.mult(H.transpose().mult(S.invert()));
        a = S.invert();
        Log.v(LOGTAG_, "Update S-1 "+a.toString());
        //Log.v(LOGTAG_, "Update K "+K.toString());
-       // x = x + Ky
+       
+       /*** x = x + Ky ***/
        x = x.plus(K.mult(y));
 
-       // P = (I-kH)P = P - KHP
+       /*** P = (I-kH)P = P - KHP ***/
        P = P.minus(K.mult(H).mult(P));
        //Log.v(LOGTAG_, "Update x out: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
 	   Log.v(LOGTAG_, "Update P out: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
    }
 
    private void wipeRows(SimpleMatrix inMatrix, final boolean[] MeasFlags){
+	   SimpleMatrix resizedMatrix = new SimpleMatrix(0, 0);
+	   int rowCount = 0;
 	   for(int row = 0; row<inMatrix.numRows(); row++){
-		   for(int col = 0; col<inMatrix.numCols();col++){
-			   if( !MeasFlags[row])
-				   inMatrix.set(row, col, 0);
-		   }
+			   if( MeasFlags[row]){
+				   resizedMatrix.combine(rowCount, 0, inMatrix.extractVector(true, row));
+			   }
 	   }
    }
    
+   private void wipeMatrix(SimpleMatrix inMatrix, final boolean[] MeasFlags){
+	   SimpleMatrix resizedMatrix = new SimpleMatrix(0, 0);
+	   int rowCount = 0;
+	   for(int row = 0; row<inMatrix.numRows(); row++){
+			   if( MeasFlags[row]){
+				   resizedMatrix.combine(rowCount, 0, inMatrix.extractVector(true, row));
+			   }
+	   }
+   }
 //   public SimpleMatrix getState() {
 //       return x;
 //   }
