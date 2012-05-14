@@ -98,4 +98,24 @@
 			android:textSize="8pt" android:padding="3dip" />
 	</TableRow>
 
+	<LinearLayout
+	    android:id="@+id/linearLayout1"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" >
+
+	    <Button
+	        android:id="@+id/resetButton"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="@string/button_1_label" />
+
+	    <ToggleButton
+	        android:id="@+id/toggleButton1"
+	        android:layout_width="0dp"
+	        android:layout_height="fill_parent"
+	        android:layout_weight="1"
+	        android:text="ToggleButton" />
+	</LinearLayout>
+
 </TableLayout>
