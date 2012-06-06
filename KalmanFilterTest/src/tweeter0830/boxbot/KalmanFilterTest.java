@@ -3,6 +3,7 @@ package tweeter0830.boxbot;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import org.apache.commons.math3.analysis.function.Atan2;
 
@@ -55,6 +56,15 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 	private TextView orientXValue_;
 	private TextView orientYValue_;
 	private TextView orientZValue_;
+	
+	// Kalman Filter Values
+	private TextView eastValue_;
+	private TextView northValue_;
+	private TextView velocityValue_;
+	private TextView accelerValue_;
+	private TextView thetaValue_;
+	private TextView thetaDotValue_;
+	
 	private float[] OrientValues_ = new float[3];
 	
 	// Orientation Matrix
@@ -87,10 +97,18 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
         magnetZValue_ = (TextView) findViewById(R.id.magnet_z_value);
         
         // Capture orientation related view elements
-        orientXValue_ = (TextView) findViewById(R.id.orient_x_value);
-        orientYValue_ = (TextView) findViewById(R.id.orient_y_value);
-        orientZValue_ = (TextView) findViewById(R.id.orient_z_value);
+//        orientXValue_ = (TextView) findViewById(R.id.orient_x_value);
+//        orientYValue_ = (TextView) findViewById(R.id.orient_y_value);
+//        orientZValue_ = (TextView) findViewById(R.id.orient_z_value);
       
+        // Capture Kalman filter related view elements
+        eastValue_ = (TextView) findViewById(R.id.orient_east_value);
+        northValue_ = (TextView) findViewById(R.id.orient_north_value);
+		velocityValue_ = (TextView) findViewById(R.id.orient_velo_value);
+		accelerValue_ = (TextView) findViewById(R.id.orient_accel_value);
+		thetaValue_ = (TextView) findViewById(R.id.orient_theta_value);
+		thetaDotValue_ = (TextView) findViewById(R.id.orient_thetaDot_value);
+        
         // Initialize accelerometer related view elements
         accelXValue_.setText("0.00");
         accelYValue_.setText("0.00");
@@ -101,11 +119,18 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
         magnetYValue_.setText("0.00");
         magnetZValue_.setText("0.00");
         
-        // Initialize orientation related view elements
-        orientXValue_.setText("0.00");
-        orientYValue_.setText("0.00");
-        orientZValue_.setText("0.00");
-
+//        // Initialize orientation related view elements
+//        orientXValue_.setText("0.00");
+//        orientYValue_.setText("0.00");
+//        orientZValue_.setText("0.00");
+        // Initialize Kalman State related view elements
+        eastValue_.setText("0.00");
+        northValue_.setText("0.00");
+        velocityValue_.setText("0.00");
+		accelerValue_.setText("0.00");
+		thetaValue_.setText("0.00");
+		thetaDotValue_.setText("0.00");
+        
         kalmanFilter_.initialize();
         double[] initialState = new double[6];
         kalmanFilter_.setState(initialState);
@@ -138,6 +163,7 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 
     // This method will update the UI on new sensor events
     public void onSensorChanged(SensorEvent sensorEvent) {
+    	final DecimalFormat fivePlaces = new DecimalFormat("0.00000");
     	synchronized (this) {
     		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
     			AccelValues_ = sensorEvent.values.clone();
@@ -164,9 +190,12 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 //                orientYValue_.setText(Float.toString(OrientValues_[1]));
 //                orientZValue_.setText(Float.toString(OrientValues_[2]));
                 kalmanFilter_.getState(currentState_);
-                orientXValue_.setText(Double.toString(currentState_[0]));
-                orientYValue_.setText(Double.toString(currentState_[1]));
-                orientZValue_.setText(Double.toString(currentState_[2]));
+                eastValue_.setText(fivePlaces.format(currentState_[0]));
+                northValue_.setText(fivePlaces.format(currentState_[1]));
+                velocityValue_.setText(fivePlaces.format(currentState_[2]));
+                accelerValue_.setText(fivePlaces.format(currentState_[3]));
+                thetaValue_.setText(fivePlaces.format(currentState_[4]));
+                thetaDotValue_.setText(fivePlaces.format(currentState_[5]));
     		}
     	}
     }

@@ -37,8 +37,8 @@ public abstract class ExtendedKF{
    private SimpleMatrix K = new SimpleMatrix(6,6);
 
    public void predict(double timeChange) {
-	   //Log.v(LOGTAG_, "Predict x in: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
-	   //Log.v(LOGTAG_, "Predict P in: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
+	   Log.v(LOGTAG_, "Predict x in: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
+	   Log.v(LOGTAG_, "Predict P in: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
        // x = f(x)
 	   a = new SimpleMatrix(6,1);
        calcf(x,a,timeChange);
@@ -47,34 +47,36 @@ public abstract class ExtendedKF{
        // P = F P F' + Q
        calcF(x,F,timeChange);
        P = F.mult(P).mult(F.transpose()).plus(Q);
-       //Log.v(LOGTAG_, "Predict x out: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
-       //Log.v(LOGTAG_, "Predict P out: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
+       Log.v(LOGTAG_, "Predict x out: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
+       Log.v(LOGTAG_, "Predict P out: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
    }
 
    public void update(SimpleMatrix z, boolean[] MeasFlags) {
-	   //Log.v(LOGTAG_, "Update x in: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
-	   //Log.v(LOGTAG_, "Update P in: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
+	   Log.v(LOGTAG_, "Update x in: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
+	   Log.v(LOGTAG_, "Update P in: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
 	   Log.v(LOGTAG_, "Update z in: "+z.get(0)+' '+z.get(1)+' '+z.get(2)+' '+z.get(3)+' '+z.get(4)+' '+z.get(5));
        
 	   /*** y = z - h(x) ***/
-       calch(z, a);
+       calch(x, a);
        wipeRows(a, MeasFlags);
+       Log.v(LOGTAG_, "a: "+a.get(0)+' '+a.get(1)+' '+a.get(2)+' '+a.get(3)+' '+a.get(4)+' '+a.get(5));
        y = z.minus(a);
+       Log.v(LOGTAG_, "y pre wipe: "+y.get(0)+' '+y.get(1)+' '+y.get(2)+' '+y.get(3)+' '+y.get(4)+' '+y.get(5));
        //Log.v(LOGTAG_, "Update y pre wipe: "+y.toString());
        //Log.v(LOGTAG_, "Update y post wipe: "+y.toString());
        
        /*** S = H P H' + R ***/
-       calcH(z, H);
-       Log.v(LOGTAG_, "Update H pre wipe: "+H.toString());
+       calcH(x, H);
+       //Log.v(LOGTAG_, "Update H pre wipe: "+H.toString());
        wipeRows(H, MeasFlags);
-       Log.v(LOGTAG_, "Update H post wipe: "+H.toString());
+       //Log.v(LOGTAG_, "Update H post wipe: "+H.toString());
        S = (H.mult(P).mult(H.transpose())).plus(R);
-       Log.v(LOGTAG_, "Update S "+S.toString());
+       //Log.v(LOGTAG_, "Update S "+S.toString());
        
        /*** K = PH'S^(-1) ***/
        K = P.mult(H.transpose().mult(S.invert()));
        a = S.invert();
-       Log.v(LOGTAG_, "Update S-1 "+a.toString());
+       //Log.v(LOGTAG_, "Update S-1 "+a.toString());
        //Log.v(LOGTAG_, "Update K "+K.toString());
        
        /*** x = x + Ky ***/
@@ -82,7 +84,7 @@ public abstract class ExtendedKF{
 
        /*** P = (I-kH)P = P - KHP ***/
        P = P.minus(K.mult(H).mult(P));
-       //Log.v(LOGTAG_, "Update x out: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
+       Log.v(LOGTAG_, "Update x out: "+x.get(0)+' '+x.get(1)+' '+x.get(2)+' '+x.get(3)+' '+x.get(4)+' '+x.get(5));
 	   Log.v(LOGTAG_, "Update P out: "+P.get(0,0)+' '+P.get(1,1)+' '+P.get(2,2)+' '+P.get(3,3)+' '+P.get(4,4)+' '+P.get(5,5));
    }
 

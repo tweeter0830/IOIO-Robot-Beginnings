@@ -36,7 +36,6 @@ public class DiffDriveExtKF extends ExtendedKF{
    
    public void setState(final double[] inState){
 	   for(int row = 0; row<inState.length; row++){
-		   Log.v(LOGTAG_,"Row ="+row);
 		   x.set(row,inState[row]);
 	   }
    }
@@ -51,7 +50,7 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   measFlags[0] = true;
 	   measFlags[1] = true;
 	   update(new SimpleMatrix(meas), measFlags);
-	   this.setState(new double[6]);
+	   //this.setState(new double[6]);
    }
    
    public void updateSpeeds(double leftSpeed, double rightSpeed){
@@ -64,7 +63,7 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   measFlags[2] = true;
 	   measFlags[3] = true;
 	   update(new SimpleMatrix(meas), measFlags);
-	   this.setState(new double[6]);
+	   //this.setState(new double[6]);
    }
    
    public void updateAccel(double accel){
@@ -75,7 +74,7 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   boolean[] measFlags = new boolean[6];
 	   measFlags[4] = true;
 	   update(new SimpleMatrix(meas), measFlags);
-	   this.setState(new double[6]);
+	   //this.setState(new double[6]);
    }
    
    public void updateHeading(double heading){
@@ -86,7 +85,7 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   boolean[] measFlags = new boolean[6];
 	   measFlags[5] = true;
 	   update(new SimpleMatrix(meas), measFlags);
-	   this.setState(new double[6]);
+	   //this.setState(new double[6]);
    }
    
    public void setSimpleP(final double[] inError){

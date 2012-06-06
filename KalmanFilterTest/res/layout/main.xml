@@ -67,6 +67,27 @@
 			android:textSize="8pt" android:padding="3dip" />
 	</TableRow>
 
+	<TextView
+	    android:id="@+id/textView1"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Large Text"
+	    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+	<TextView
+	    android:id="@+id/textView2"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Large Text"
+	    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+	<TextView
+	    android:id="@+id/textView3"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Large Text"
+	    android:textAppearance="?android:attr/textAppearanceLarge" />
+
 	<View android:layout_height="2dip" android:background="#FF909090" />
 	<TableRow>
 		<TextView android:id="@+id/orientation_label"
@@ -75,29 +96,79 @@
 	</TableRow>
 
 	<TableRow>
-		<TextView android:id="@+id/orient_x_label"
-			android:layout_column="1" android:text="X:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/orient_x_value" android:gravity="right"
+
+		<TextView
+		    android:id="@+id/orient_east_label"
+		    android:layout_column="1"
+		    android:digits="5"
+		    android:padding="3dip"
+		    android:text="Easting:"
+		    android:textSize="8pt" />
+
+		<TextView android:id="@+id/orient_east_value" android:gravity="right"
 			android:textSize="8pt" android:padding="3dip" />
 	</TableRow>
 
 	<TableRow>
-		<TextView android:id="@+id/orient_y_label"
-			android:layout_column="1" android:text="Y:" android:textSize="8pt"
+		<TextView android:id="@+id/orient_north_label"
+			android:layout_column="1" android:text="Northing:" android:textSize="8pt"
 			android:padding="3dip" />
-		<TextView android:id="@+id/orient_y_value" android:gravity="right"
+		<TextView android:id="@+id/orient_north_value" android:gravity="right"
 			android:textSize="8pt" android:padding="3dip" />
 	</TableRow>
 
 	<TableRow>
-		<TextView android:id="@+id/orient_z_label"
-			android:layout_column="1" android:text="Z:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/orient_z_value" android:gravity="right"
+
+		<TextView
+		    android:id="@+id/orient_velo_label"
+		    android:layout_column="1"
+		    android:padding="3dip"
+		    android:text="Velocity:"
+		    android:textSize="8pt" />
+
+		<TextView android:id="@+id/orient_velo_value" android:gravity="right"
 			android:textSize="8pt" android:padding="3dip" />
 	</TableRow>
 
+	<TableRow>
+
+		<TextView
+		    android:id="@+id/orient_accel_label"
+		    android:layout_column="1"
+		    android:padding="3dip"
+		    android:text="Acceleration:"
+		    android:textSize="8pt" />
+
+		<TextView android:id="@+id/orient_accel_value" android:gravity="right"
+			android:textSize="8pt" android:padding="3dip" />
+	</TableRow>
+	
+	<TableRow>
+
+		<TextView
+		    android:id="@+id/orient_theta_label"
+		    android:layout_column="1"
+		    android:padding="3dip"
+		    android:text="Theta:"
+		    android:textSize="8pt" />
+
+		<TextView android:id="@+id/orient_theta_value" android:gravity="right"
+			android:textSize="8pt" android:padding="3dip" />
+	</TableRow>
+	
+	<TableRow>
+
+		<TextView
+		    android:id="@+id/orient_thetaDot_label"
+		    android:layout_column="1"
+		    android:padding="3dip"
+		    android:text="ThetaDot:"
+		    android:textSize="8pt" />
+
+		<TextView android:id="@+id/orient_thetaDot_value" android:gravity="right"
+			android:textSize="8pt" android:padding="3dip" />
+	</TableRow>
+	
 	<LinearLayout
 	    android:id="@+id/linearLayout1"
 	    android:layout_width="wrap_content"
