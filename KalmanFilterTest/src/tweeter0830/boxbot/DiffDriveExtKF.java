@@ -121,12 +121,12 @@ public class DiffDriveExtKF extends ExtendedKF{
        double heading = inState.get(4);
        double headingDot = inState.get(5);
 
-       F.setRow(0, 0,                  easting, 0, Math.sin(heading)*timeChange,0,velocity*Math.cos(heading)*timeChange,0);
-       F.setRow(1, 0,                  0, northing, Math.cos(heading)*timeChange,0,-velocity*Math.sin(heading)*timeChange,0);
-       F.setRow(2, 0,                  0, 0, velocity, timeChange,0,0);
-       F.setRow(3, 0,                  0, 0, 0, accel,0,0);
-       F.setRow(4, 0,                  0, 0, 0, 0,heading,timeChange);
-       F.setRow(5, 0,                  0, 0, 0, 0,0,headingDot);
+       F.setRow(0, 0,                  1, 0, Math.sin(heading)*timeChange,0,velocity*Math.cos(heading)*timeChange,0);
+       F.setRow(1, 0,                  0, 1, Math.cos(heading)*timeChange,0,-velocity*Math.sin(heading)*timeChange,0);
+       F.setRow(2, 0,                  0, 0, 1, timeChange,0,0);
+       F.setRow(3, 0,                  0, 0, 0, 1,0,0);
+       F.setRow(4, 0,                  0, 0, 0, 0,1,timeChange);
+       F.setRow(5, 0,                  0, 0, 0, 0,0,1);
    }
 
    protected void calcf(final SimpleMatrix inState, SimpleMatrix outState, double timeChange){
