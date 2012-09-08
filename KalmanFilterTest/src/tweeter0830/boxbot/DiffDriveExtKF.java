@@ -187,9 +187,9 @@ public class DiffDriveExtKF extends ExtendedKF{
    }
    
    private double getTimeChange(){
-	   long newTime = System.nanoTime();
-	   double timeChangeSec = ((double)(newTime-oldTime_))/1000000000;
-	   oldTime_ = newTime;
+	   newTime_ = System.nanoTime();
+	   double timeChangeSec = ((double)(newTime_-oldTime_))/1000000000;
+	   oldTime_ = newTime_;
 	   return timeChangeSec;
    }
    

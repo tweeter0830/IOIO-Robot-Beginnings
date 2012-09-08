@@ -9,6 +9,7 @@ import org.apache.commons.math3.analysis.function.Atan2;
 
 import ioio.lib.android.AbstractIOIOActivity;
 import ioio.lib.api.exception.ConnectionLostException;
+import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -36,7 +37,9 @@ import android.widget.TextView;
  * 		 = 0.15 @ 2.5 = 4.4%
  *       = 0.03 @ 0.7 = 4.2%
  */
-public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEventListener{
+
+//public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEventListener
+public class KalmanFilterTest extends Activity implements SensorEventListener{
 	
 	public static final String LOGTAG_ = "Kalman Test";
 
@@ -77,6 +80,7 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 	private FileWriter writer_;
 	private SensorManager sensorManager_ = null;
 	
+	//Create a differential drive Kalman filter based on the dimensions of this robot 
 	DiffDriveExtKF kalmanFilter_ = new DiffDriveExtKF(0.09, 0.21, 6371009, 34.6981);
 	
     @Override
@@ -98,7 +102,7 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
         
         // Capture orientation related view elements
 //        orientXValue_ = (TextView) findViewById(R.id.orient_x_value);
-//        orientYValue_ = (TextView) findViewById(R.id.orient_y_value);
+//    	measCount++;        orientYValue_ = (TextView) findViewById(R.id.orient_y_value);
 //        orientZValue_ = (TextView) findViewById(R.id.orient_z_value);
       
         // Capture Kalman filter related view elements
@@ -132,8 +136,12 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 		thetaDotValue_.setText("0.00");
         
         kalmanFilter_.initialize();
+        
+        //set the Kalman's initial state to zero
         double[] initialState = new double[6];
         kalmanFilter_.setState(initialState);
+        
+        //Set the initial error covariance matrix
         double[] initalErrorCov = new double[6];
         initalErrorCov[0] = 0;
         initalErrorCov[1] = 0;
@@ -142,6 +150,8 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
         initalErrorCov[4] = .1;
         initalErrorCov[5] = .001;
         kalmanFilter_.setSimpleP(initalErrorCov);
+        
+        //Set the process error covariance matrix
         double[] proccErrorCov = new double[6];
         proccErrorCov[0] = .2;
         proccErrorCov[1] = .2;
@@ -150,6 +160,8 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
         proccErrorCov[4] = .2;
         proccErrorCov[5] = 0.1;
         kalmanFilter_.setSimpleQ(proccErrorCov);
+        
+        //Set the measurement error covariance matrix
         double[] measErrorCov = new double[6];
         measErrorCov[0] = 0;
         measErrorCov[1] = 0;
@@ -164,6 +176,7 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
     // This method will update the UI on new sensor events
     public void onSensorChanged(SensorEvent sensorEvent) {
     	final DecimalFormat fivePlaces = new DecimalFormat("0.00000");
+    	
     	synchronized (this) {
     		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
     			AccelValues_ = sensorEvent.values.clone();
@@ -209,9 +222,11 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
     protected void onResume() {
     	super.onResume();
     	// Register this class as a listener for the accelerometer sensor
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+    	//I have set the sensor rates to a slower rate so that I don't overwhelm the ability of the phone to write to the log
+    	//TODO Change the sensor rates back to fastest when I'm done debugging (never?)
+    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
     	// ...and the magnetic sensor
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_FASTEST);
+    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
     	//try to open a log file
     	try {
     		File logFile = new File(Environment.getExternalStorageDirectory()+"/sensorLog.csv");
@@ -236,21 +251,24 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Log.e(LOGTAG_, e.getMessage());
 			}
     	super.onPause();
     }
-	class IOIOThread extends AbstractIOIOActivity.IOIOThread {
-		@Override
-		public void setup() throws ConnectionLostException {
+    
+//    //I've nulled out all of the IOIO stuff for the time being
+//	class IOIOThread extends AbstractIOIOActivity.IOIOThread {
+//		@Override
+//		public void setup() throws ConnectionLostException {
 //			try {
 //			} catch (ConnectionLostException e) {
 //				enableUi(false);
 //				throw e;
 //			}
-		}
-		
-		@Override
-		public void loop() throws ConnectionLostException {
+//		}
+//		
+//		@Override
+//		public void loop() throws ConnectionLostException {
 //			try {
 //			} catch (InterruptedException e) {
 //				ioio_.disconnect();
@@ -261,13 +279,13 @@ public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEven
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-		}
-	}
+//		}
+//	}
 
-	@Override
-	protected AbstractIOIOActivity.IOIOThread createIOIOThread() {
-		return new IOIOThread();
-	}
+//	@Override
+//	protected AbstractIOIOActivity.IOIOThread createIOIOThread() {
+//		return new IOIOThread();
+//	}
 
 //	private void enableUi(final boolean enable) {
 //		runOnUiThread(new Runnable() {

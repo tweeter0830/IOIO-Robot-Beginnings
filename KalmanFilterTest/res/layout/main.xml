@@ -1,192 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:keepScreenOn="true"
-    android:stretchColumns="1" >
+<!-- <ScrollView > -->
+<!--     *android:layout_width="fill_parent" -->
+<!-- 	*android:layout_height="fill_parent" -->
+<!-- 	//android:keepScreenOn="true" -->
+	<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+	    android:stretchColumns="1"
+   		android:keepScreenOn="true" >
 
-	<TableRow>
-		<TextView android:id="@+id/accelerometer_label"
-			android:layout_column="1" android:text="Accelerometer"
-			android:textSize="9pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/accel_x_label"
-			android:layout_column="1" android:text="X:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/accel_x_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/accel_y_label"
-			android:layout_column="1" android:text="Y:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/accel_y_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/accel_z_label"
-			android:layout_column="1" android:text="Z:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/accel_z_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<View android:layout_height="2dip" android:background="#FF909090" />
-
-	<TableRow>
-		<TextView android:id="@+id/magnetometer_label"
-			android:layout_column="1" android:text="Magnetometer"
-			android:textSize="9pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/magnet_x_label"
-			android:layout_column="1" android:text="X:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/magnet_x_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/magnet_y_label"
-			android:layout_column="1" android:text="Y:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/magnet_y_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/magnet_z_label"
-			android:layout_column="1" android:text="Z:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/magnet_z_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TextView
-	    android:id="@+id/textView1"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="Large Text"
-	    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-	<TextView
-	    android:id="@+id/textView2"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="Large Text"
-	    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-	<TextView
-	    android:id="@+id/textView3"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="Large Text"
-	    android:textAppearance="?android:attr/textAppearanceLarge" />
-
-	<View android:layout_height="2dip" android:background="#FF909090" />
-	<TableRow>
-		<TextView android:id="@+id/orientation_label"
-			android:layout_column="1" android:text="Orientation"
-			android:textSize="9pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-
-		<TextView
-		    android:id="@+id/orient_east_label"
-		    android:layout_column="1"
-		    android:digits="5"
-		    android:padding="3dip"
-		    android:text="Easting:"
-		    android:textSize="8pt" />
-
-		<TextView android:id="@+id/orient_east_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:id="@+id/orient_north_label"
-			android:layout_column="1" android:text="Northing:" android:textSize="8pt"
-			android:padding="3dip" />
-		<TextView android:id="@+id/orient_north_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-
-		<TextView
-		    android:id="@+id/orient_velo_label"
-		    android:layout_column="1"
-		    android:padding="3dip"
-		    android:text="Velocity:"
-		    android:textSize="8pt" />
-
-		<TextView android:id="@+id/orient_velo_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
-
-	<TableRow>
-
-		<TextView
-		    android:id="@+id/orient_accel_label"
-		    android:layout_column="1"
-		    android:padding="3dip"
-		    android:text="Acceleration:"
-		    android:textSize="8pt" />
-
-		<TextView android:id="@+id/orient_accel_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
+		
+		<TableRow>
+			<TextView android:id="@+id/accelerometer_label"
+				android:layout_column="1" android:text="Accelerometer"
+				android:textSize="9pt" android:padding="3dip" />
+		</TableRow>
 	
-	<TableRow>
-
-		<TextView
-		    android:id="@+id/orient_theta_label"
-		    android:layout_column="1"
-		    android:padding="3dip"
-		    android:text="Theta:"
-		    android:textSize="8pt" />
-
-		<TextView android:id="@+id/orient_theta_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
+		<TableRow>
+			<TextView android:id="@+id/accel_x_label"
+				android:layout_column="1" android:text="X:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/accel_x_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
 	
-	<TableRow>
-
-		<TextView
-		    android:id="@+id/orient_thetaDot_label"
-		    android:layout_column="1"
-		    android:padding="3dip"
-		    android:text="ThetaDot:"
-		    android:textSize="8pt" />
-
-		<TextView android:id="@+id/orient_thetaDot_value" android:gravity="right"
-			android:textSize="8pt" android:padding="3dip" />
-	</TableRow>
+		<TableRow>
+			<TextView android:id="@+id/accel_y_label"
+				android:layout_column="1" android:text="Y:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/accel_y_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
 	
-	<LinearLayout
-	    android:id="@+id/linearLayout1"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content" >
-
-	    <Button
-	        android:id="@+id/resetButton"
-	        android:layout_width="0dp"
-	        android:layout_height="wrap_content"
-	        android:layout_weight="1"
-	        android:text="@string/button_1_label" />
-
-	    <ToggleButton
-	        android:id="@+id/toggleButton1"
-	        android:layout_width="0dp"
-	        android:layout_height="fill_parent"
-	        android:layout_weight="1"
-	        android:text="ToggleButton" />
-	</LinearLayout>
-
-</TableLayout>
+		<TableRow>
+			<TextView android:id="@+id/accel_z_label"
+				android:layout_column="1" android:text="Z:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/accel_z_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<View android:layout_height="2dip" android:background="#FF909090" />
+	
+		<TableRow>
+			<TextView android:id="@+id/magnetometer_label"
+				android:layout_column="1" android:text="Magnetometer"
+				android:textSize="9pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+			<TextView android:id="@+id/magnet_x_label"
+				android:layout_column="1" android:text="X:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/magnet_x_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+			<TextView android:id="@+id/magnet_y_label"
+				android:layout_column="1" android:text="Y:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/magnet_y_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+			<TextView android:id="@+id/magnet_z_label"
+				android:layout_column="1" android:text="Z:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/magnet_z_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<View android:layout_height="2dip" android:background="#FF909090" />
+		<TableRow>
+			<TextView android:id="@+id/orientation_label"
+				android:layout_column="1" android:text="Orientation"
+				android:textSize="9pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+	
+			<TextView
+			    android:id="@+id/orient_east_label"
+			    android:layout_column="1"
+			    android:digits="5"
+			    android:padding="3dip"
+			    android:text="Easting:"
+			    android:textSize="8pt" />
+	
+			<TextView android:id="@+id/orient_east_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+			<TextView android:id="@+id/orient_north_label"
+				android:layout_column="1" android:text="Northing:" android:textSize="8pt"
+				android:padding="3dip" />
+			<TextView android:id="@+id/orient_north_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+	
+			<TextView
+			    android:id="@+id/orient_velo_label"
+			    android:layout_column="1"
+			    android:padding="3dip"
+			    android:text="Velocity:"
+			    android:textSize="8pt" />
+	
+			<TextView android:id="@+id/orient_velo_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+	
+		<TableRow>
+	
+			<TextView
+			    android:id="@+id/orient_accel_label"
+			    android:layout_column="1"
+			    android:padding="3dip"
+			    android:text="Acceleration:"
+			    android:textSize="8pt" />
+	
+			<TextView android:id="@+id/orient_accel_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+		
+		<TableRow>
+	
+			<TextView
+			    android:id="@+id/orient_theta_label"
+			    android:layout_column="1"
+			    android:padding="3dip"
+			    android:text="Theta:"
+			    android:textSize="8pt" />
+	
+			<TextView android:id="@+id/orient_theta_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+		
+		<TableRow>
+	
+			<TextView
+			    android:id="@+id/orient_thetaDot_label"
+			    android:layout_column="1"
+			    android:padding="3dip"
+			    android:text="ThetaDot:"
+			    android:textSize="8pt" />
+	
+			<TextView android:id="@+id/orient_thetaDot_value" android:gravity="right"
+				android:textSize="8pt" android:padding="3dip" />
+		</TableRow>
+		
+		<LinearLayout
+		    android:id="@+id/linearLayout1"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content" >
+	
+		    <Button
+		        android:id="@+id/resetButton"
+		        android:layout_width="0dp"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1"
+		        android:text="@string/button_1_label" />
+	
+		    <ToggleButton
+		        android:id="@+id/toggleButton1"
+		        android:layout_width="0dp"
+		        android:layout_height="fill_parent"
+		        android:layout_weight="1"
+		        android:text="ToggleButton" />
+		</LinearLayout>
+	
+	</TableLayout>
+<!-- </ScrollView> -->
