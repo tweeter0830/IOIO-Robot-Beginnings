@@ -98,15 +98,16 @@ public class DiffDriveExtKF{
    }
    
    public void getState(double[] outState){
-	   for(int row = 0; row<x.numRows(); row++){
-		   outState[row]=x.get(row);
-	   }
+	   outState = Arrays.copyOf(X_,nStates);
    }
    
-   public void getSimpleP(double[] outState){
-	   SimpleMatrix diag = P.extractDiag();
-	   for(int row = 0; row<diag.numRows(); row++){
-		   outState[row]=diag.get(row);
+   public void setState(double[] inState){
+	   X_ = Arrays.copyOf(outState,nStates);
+   }
+   
+   public void getSimpleP(double[] POut){
+	   for(int row = 0; row<nStates; row++){
+		   POut[row]=P_[row][row];
 	   }
    }
    
@@ -126,20 +127,32 @@ public class DiffDriveExtKF{
 		Xout[5] = thetaDot
 	}
    
-   protected void calcF(final SimpleMatrix inState, SimpleMatrix F,double timeChange){
-       double easting = inState.get(0);
-       double northing = inState.get(1);
-       double velocity = inState.get(2);
-       double accel = inState.get(3);
-       double heading = inState.get(4);
-       double headingDot = inState.get(5);
+   protected void calcF(final double[] XIn, double[][] F, double deltaT){
+		double x = Xin[0];
+		double y = Xin[1];
+		double v = Xin[2];
+		double a = Xin[3];
+		double theta = Xin[4];
+		double thetaDot = Xin[5];
 
-       F.setRow(0, 0,                  easting, 0, Math.sin(heading)*timeChange,0,velocity*Math.cos(heading)*timeChange,0);
-       F.setRow(1, 0,                  0, northing, Math.cos(heading)*timeChange,0,-velocity*Math.sin(heading)*timeChange,0);
-       F.setRow(2, 0,                  0, 0, velocity, timeChange,0,0);
-       F.setRow(3, 0,                  0, 0, 0, accel,0,0);
-       F.setRow(4, 0,                  0, 0, 0, 0,heading,timeChange);
-       F.setRow(5, 0,                  0, 0, 0, 0,0,headingDot);
+		for (int line : 6) {
+            Arrays.fill(F[line], 0);
+        }
+        
+		double newTheta = thetaDot*deltaT+theta;
+		
+       F[0][0]=1; 
+       F[0][2]=-deltaT*Math.sin(newTheta); 				F[0][3]=-deltaT^2*Math.sin(newTheta);
+       F[0][4]=-(v+a*deltaT)*deltaT*Math.cos(newTheta);	F[0][5]=-(v+a*deltaT)*deltaT^2*Math.cos(newTheta);
+       
+       F[1][1]=1; 
+       F[1][2]= deltaT*Math.cos(newTheta); 				F[1][3]= deltaT^2*Math.cos(newTheta);
+       F[1][4]=-(v+a*deltaT)*deltaT*Math.sin(newTheta);	F[1][5]=-(v+a*deltaT)*deltaT^2*Math.sin(newTheta);
+       
+       F[2][2]=1;	F[2][3]=deltaT;
+       F[3][3]=1;
+       F[4][4]=1;	F[4][5]=deltaT;
+       F[5][5]=1;
    }
 
 	protected void calch(final double[] Xin, double[] hOut){
@@ -160,7 +173,10 @@ public class DiffDriveExtKF{
 	}
    
    protected void calcH(double[][] H){
-		//TODO set H to zero
+		for (int line : 6) {
+            Arrays.fill(H[line], 0);
+        }
+        
        H[0][0] = 1
        H[1][1] = 1
        H[2][2] = 1
