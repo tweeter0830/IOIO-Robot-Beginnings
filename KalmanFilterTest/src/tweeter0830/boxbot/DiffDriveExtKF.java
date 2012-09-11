@@ -1,43 +1,52 @@
 package tweeter0830.boxbot;
 
-import org.ejml.simple.SimpleMatrix;
-
-import android.util.Log;
+import Jama.*
 import java.math.*;
-import tweeter0830.kalmanFilter.*;
+import android.util.Log;
 
-public class DiffDriveExtKF extends ExtendedKF{
-
-   private static String LOGTAG_ = "KalmanFilter";
-
+public class DiffDriveExtKF{
+   private static String LOGTAG_ = "DiffDriveExtKF";
+   private final int nStates = 6;
+   private final int nSensors = 7;
+   
+   //States
+   private double[] X_ = new double[nStates];
+   // Kinematics Jacobian
+   private double[][] F_ = new double[nStates][nStates];
+   // Process noise
+   public double[][] Q_ = new double[nStates][nStates];
+   // Covariance Estimate
+   private double[][] P_ = new double[nStates][]nStates];
+   // Sensor values 
+   private double[] Z_ = new double[nSensors];
+   // Sensor Jacobian
+   private double[][] H_ = new double[nSensors][nStates];
+   // Sensor noise
+   public double[][] R_ = new double[nSensors][nStates];
+   
+   //Variables to keep track of initialization
+   private boolean QSet_ = false;
+   private boolean RSet_ = false;
+   private boolean timeSet_ = false;
+   
    //Constants
-   private double R_;
-   private double L_;
-   private double D_;
-   private double inititalLat_;
+   private double earthRad_;
+   private double wheelDiam_;
+   private double wheelBase_;
+   private double iniLatit_;
    private long oldTime_;
    private long newTime_;
 
-   public DiffDriveExtKF(double diameter, double length, double earthRad, double roughLattitude){
-	   D_ = diameter;
-	   L_ = length;
-	   R_ = earthRad;
-	   inititalLat_ = roughLattitude;
-	   x = new SimpleMatrix(6, 1);
-	   P = new SimpleMatrix(6, 6);
-	   
-	   Q = new SimpleMatrix(6,6);
-	   R = new SimpleMatrix(6,6);
+   public DiffDriveExtKF(double wheelDiam, double wheelBase, double earthRad, double inititalLat){
+	   wheelDiam_ = wheelDiam;
+	   wheelBase_ = wheelBase;
+	   earthRad_ = earthRad;
+	   inititalLat_ = inititalLat;
    }
    
    public void initialize(){
 	   oldTime_ = System.nanoTime();
-   }
-   
-   public void setState(final double[] inState){
-	   for(int row = 0; row<inState.length; row++){
-		   x.set(row,inState[row]);
-	   }
+	   timeSet_ = true;
    }
    
    public void updateGPS(double lat, double longi){
@@ -88,18 +97,6 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   //this.setState(new double[6]);
    }
    
-   public void setSimpleP(final double[] inError){
-	   setDiagonal(P, inError);
-   }
-   
-   public void setSimpleQ(final double[] inError){
-	   setDiagonal(Q, inError);
-   }
-   
-   public void setSimpleR(final double[] inError){
-	   setDiagonal(R, inError);
-   }
-   
    public void getState(double[] outState){
 	   for(int row = 0; row<x.numRows(); row++){
 		   outState[row]=x.get(row);
@@ -112,6 +109,22 @@ public class DiffDriveExtKF extends ExtendedKF{
 		   outState[row]=diag.get(row);
 	   }
    }
+   
+	protected void calcf(final double[] XIn, double[] XOut, double deltaT){
+		double x = Xin[0];
+		double y = Xin[1];
+		double v = Xin[2];
+		double a = Xin[3];
+		double theta = Xin[4];
+		double thetaDot = Xin[5];
+		
+		Xout[0] = x-(v+a*deltaT)*deltaT*Math.sin(thetaDot*deltaT+theta);
+		Xout[1] = y+(v+a*deltaT)*deltaT*Math.cos(thetaDot*deltaT+theta);
+		Xout[2] = v+a*deltaT;
+		Xout[3] = a
+		Xout[4] = theta+a*deltaT
+		Xout[5] = thetaDot
+	}
    
    protected void calcF(final SimpleMatrix inState, SimpleMatrix F,double timeChange){
        double easting = inState.get(0);
@@ -129,61 +142,32 @@ public class DiffDriveExtKF extends ExtendedKF{
        F.setRow(5, 0,                  0, 0, 0, 0,0,headingDot);
    }
 
-   protected void calcf(final SimpleMatrix inState, SimpleMatrix outState, double timeChange){
-       double easting = inState.get(0);
-       double northing = inState.get(1);
-       double velocity = inState.get(2);
-       double accel = inState.get(3);
-       double heading = inState.get(4);
-       double headingDot = inState.get(5);
-
-       
-       //outState = new SimpleMatrix(6,1); 
-       outState.set(0,velocity*Math.sin(heading)*timeChange+easting);
-       outState.set(1,velocity*Math.cos(heading)*timeChange+northing);
-       outState.set(2,accel*timeChange+velocity);
-       outState.set(3,accel);
-       outState.set(4,headingDot*timeChange+heading);
-       outState.set(5, headingDot);
-   }
-
-   protected void calcH(final SimpleMatrix inState, SimpleMatrix H){
-//      double easting = inState.get(1);
-//      double northing = inState.get(2);
-//      double velocity = inState.get(3);
-//      double accel = inState.get(4);
-//      double heading = inState.get(5);
-//      double headingDot = inState.get(6);
-
-       H.setRow(0, 0,                  Math.cos(inititalLat_),0,0,0,0,0);
-       H.setRow(1, 0,                  0,1.0/R_,0,0,0,0);
-       H.setRow(2, 0,                  0,0,1.0/D_,0,0,L_/(2*D_));
-       H.setRow(3, 0,                  0,0,1.0/D_,0,0,-L_/(2*D_));
-       H.setRow(4, 0,                  0,0,0,1,0,0);
-       H.setRow(5, 0,                  0,0,0,0,1,0);
-   }
-
-   protected void calch(final SimpleMatrix inState, SimpleMatrix h){
-       double easting = inState.get(0);
-       double northing = inState.get(1);
-       double velocity = inState.get(2);
-       double accel = inState.get(3);
-       double heading = inState.get(4);
-       double headingDot = inState.get(5);
-
-       //Change in Lon
-       h.set(0,easting/R_*Math.cos(inititalLat_));
-       //Change in Lat
-       h.set(1,northing/R_);
-       //Left Wheel Speed
-       h.set(2,velocity/D_+headingDot*L_/(2*D_));
-       //Right Wheel Speed
-       //TODO This minus might need to be switched. Check defined direction of theta
-       h.set(3,velocity/D_-headingDot*L_/(2*D_));
-       //Acceleration
-       h.set(4,accel);
-       //Heading
-       h.set(5,heading);
+	protected void calch(final double[] Xin, double[] hOut){
+		double x = Xin[0];
+		double y = Xin[1];
+		double v = Xin[2];
+		double a = Xin[3];
+		double theta = Xin[4];
+		double thetaDot = Xin[5];
+		
+		Hout[0] = x
+		Hout[1] = y
+		Hout[2] = v
+		Hout[3] = a
+		Hout[4] = theta
+		Hout[5] = thetaDot
+		Hout[6] = thetaDot
+	}
+   
+   protected void calcH(double[][] H){
+		//TODO set H to zero
+       H[0][0] = 1
+       H[1][1] = 1
+       H[2][2] = 1
+       H[3][3] = 1
+       H[4][4] = 1
+       H[5][5] = 1
+       H[6][5] = 1
    }
    
    private double getTimeChange(){
@@ -193,9 +177,9 @@ public class DiffDriveExtKF extends ExtendedKF{
 	   return timeChangeSec;
    }
    
-   private void setDiagonal(SimpleMatrix inMatrix, double[] inDiag){
+   public void setDiagonal(double[][] inMatrix, double[] inDiag){
 	   for(int row = 0; row<inDiag.length; row++){
-		   inMatrix.set(row, row, inDiag[row]);
+		   inMatrix[row, row] = inDiag[row];
 	   }
    }
 }
