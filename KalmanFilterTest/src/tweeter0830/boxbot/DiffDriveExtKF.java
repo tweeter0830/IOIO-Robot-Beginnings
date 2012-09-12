@@ -52,54 +52,67 @@ public class DiffDriveExtKF{
    public void updateGPS(double lat, double longi){
 	   predict(getTimeChange());
 	   
-	   double[][] meas = new double[6][1];
-	   meas[0][0] = longi;
-	   meas[1][0] = lat;
+	   Arrays.fill(Z_, 0);
+	   //TODO Properly implement this. I need to map the Lat and long 
+	   // to x and y in the movement frame
+	   Z_[0] = lat;
+	   Z_[1] = longi;
+	   
 	   boolean[] measFlags = new boolean[6];
 	   measFlags[0] = true;
 	   measFlags[1] = true;
-	   update(new SimpleMatrix(meas), measFlags);
-	   //this.setState(new double[6]);
+	   
+	   update(measFlags);
    }
    
-   public void updateSpeeds(double leftSpeed, double rightSpeed){
+   public void updateWheels(double leftRate, double rightRate){
 	   predict(getTimeChange());
 	   
-	   double[][] meas = new double[6][1];
-	   meas[2][0] = leftSpeed;
-	   meas[3][0] = rightSpeed;
+	   Arrays.fill(Z_, 0);
+	   Z_[2] = wheelDiam_*(leftRate+rightRate)/2;
+	   Z_[7] = wheelDiam_*(rightRate-leftRate)/wheelBase_;
+	   
 	   boolean[] measFlags = new boolean[6];
-	   measFlags[2] = true;
 	   measFlags[3] = true;
-	   update(new SimpleMatrix(meas), measFlags);
-	   //this.setState(new double[6]);
+	   update(measFlags);
    }
    
    public void updateAccel(double accel){
 	   predict(getTimeChange());
 	   
-	   double[][] meas = new double[6][1];
-	   meas[4][0] = accel;
+	   Arrays.fill(Z_, 0);
+	   Z_[3] = accel;
+	   
 	   boolean[] measFlags = new boolean[6];
-	   measFlags[4] = true;
-	   update(new SimpleMatrix(meas), measFlags);
-	   //this.setState(new double[6]);
+	   measFlags[3] = true;
+	   update(measFlags);
    }
    
    public void updateHeading(double heading){
 	   predict(getTimeChange());
 	   
-	   double[][] meas = new double[6][1];
-	   meas[5][0] = heading;
+	   Arrays.fill(Z_, 0);
+	   Z_[4] = heading;
+	   
+	   boolean[] measFlags = new boolean[6];
+	   measFlags[4] = true;
+	   update(measFlags);
+   }
+   
+   public void updateHeadingRate(double headingRate){
+	   predict(getTimeChange());
+	   
+	   Arrays.fill(Z_, 0);
+	   Z_[5] = headingRate;
+	   
 	   boolean[] measFlags = new boolean[6];
 	   measFlags[5] = true;
-	   update(new SimpleMatrix(meas), measFlags);
-	   //this.setState(new double[6]);
+	   update(measFlags);
    }
    
    public void predict(double deltaT) {
        // x = f(x)
-	   double[] XNew = new double[nStates];
+	double[] XNew = new double[nStates];
        calcf(X_,XNew,deltaT);
        X_ = Arrays.copyOf(XNew,nStates);
 
@@ -116,9 +129,8 @@ public class DiffDriveExtKF{
    
    public void update(SimpleMatrix z, boolean[] MeasFlags) {
        
-	   /*** y = z - h(x) ***/
+	/*** y = z - h(x) ***/
        calch(x, a);
-       wipeRows(a, MeasFlags);
        y = z.minus(a);
        
        /*** S = H P H' + R ***/
