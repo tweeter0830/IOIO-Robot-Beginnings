@@ -36,7 +36,7 @@ public class DiffDriveExtKF{
    private double iniLatit_;
    private long oldTime_;
    private long newTime_;
-
+   
    public DiffDriveExtKF(double wheelDiam, double wheelBase, double earthRad, double inititalLat){
 	   wheelDiam_ = wheelDiam;
 	   wheelBase_ = wheelBase;
@@ -97,18 +97,44 @@ public class DiffDriveExtKF{
 	   //this.setState(new double[6]);
    }
    
-   public void getState(double[] outState){
-	   outState = Arrays.copyOf(X_,nStates);
+   public void predict(double deltaT) {
+       // x = f(x)
+	   double[] XNew = new double[nStates];
+       calcf(X_,XNew,deltaT);
+       X_ = Arrays.copyOf(XNew,nStates);
+
+       // P = F P F' + Q
+       calcF(X_,F_,deltaT);
+       
+       //Matrix-ize everything :/
+       Matrix FMat = Matrix(F_);
+       Matrix PMat = Matrix(P_);
+       Matrix QMat = Matrix(Q_);
+       
+       P_ = (FMat.times(PMat).times(FMat.transpose())).plus(Q).getArrayCopy();
    }
    
-   public void setState(double[] inState){
-	   X_ = Arrays.copyOf(outState,nStates);
-   }
-   
-   public void getSimpleP(double[] POut){
-	   for(int row = 0; row<nStates; row++){
-		   POut[row]=P_[row][row];
-	   }
+   public void update(SimpleMatrix z, boolean[] MeasFlags) {
+       
+	   /*** y = z - h(x) ***/
+       calch(x, a);
+       wipeRows(a, MeasFlags);
+       y = z.minus(a);
+       
+       /*** S = H P H' + R ***/
+       calcH(x, H);
+       wipeRows(H, MeasFlags);
+       S = (H.mult(P).mult(H.transpose())).plus(R);
+       
+       /*** K = PH'S^(-1) ***/
+       K = P.mult(H.transpose().mult(S.invert()));
+       a = S.invert();
+       
+       /*** x = x + Ky ***/
+       x = x.plus(K.mult(y));
+
+       /*** P = (I-kH)P = P - KHP ***/
+       P = P.minus(K.mult(H).mult(P));
    }
    
 	protected void calcf(final double[] XIn, double[] XOut, double deltaT){
@@ -184,6 +210,20 @@ public class DiffDriveExtKF{
        H[4][4] = 1
        H[5][5] = 1
        H[6][5] = 1
+   }
+   
+   public void getState(double[] outState){
+	   outState = Arrays.copyOf(X_,nStates);
+   }
+   
+   public void setState(double[] inState){
+	   X_ = Arrays.copyOf(outState,nStates);
+   }
+   
+   public void getSimpleP(double[] POut){
+	   for(int row = 0; row<nStates; row++){
+		   POut[row]=P_[row][row];
+	   }
    }
    
    private double getTimeChange(){
