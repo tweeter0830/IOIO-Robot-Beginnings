@@ -127,26 +127,36 @@ public class DiffDriveExtKF{
        P_ = (FMat.times(PMat).times(FMat.transpose())).plus(Q).getArrayCopy();
    }
    
-   public void update(SimpleMatrix z, boolean[] MeasFlags) {
+   public void update(boolean[] MeasFlags) {
        
 	/*** y = z - h(x) ***/
-       calch(x, a);
-       y = z.minus(a);
+	double[] hCalced = new double[nSensors];
+       calch(X_, hCalced);
+       //Matrix-ize Everything :/
+       Matrix ZMat = Matrix(Z_,nSensors);
+       Matrix hMat = Matrix(hCalced,nSensors);
+       
+       Matrix YMat = ZMat.minus(hMat);
        
        /*** S = H P H' + R ***/
-       calcH(x, H);
-       wipeRows(H, MeasFlags);
-       S = (H.mult(P).mult(H.transpose())).plus(R);
+       calcH(X_, H_);
+       wipeRows(H_, MeasFlags);
+       
+       //Matrix-ize Everything :/
+       Matrix HMat = Matrix(Z_);
+       Matrix PMat = Matrix(P_);
+       Matrix RMat = Matrix(R_);
+       
+       Matrix SMat = (HMat.times(PMat).times(HMat.transpose())).plus(RMat);
        
        /*** K = PH'S^(-1) ***/
-       K = P.mult(H.transpose().mult(S.invert()));
-       a = S.invert();
+       Matrix KMat = PMat.times(HMat.transpose().times(SMat.invert()));
        
        /*** x = x + Ky ***/
-       x = x.plus(K.mult(y));
+       X_ = (XMat.plus(KMat.times(YMat))).getArrayCopy();
 
        /*** P = (I-kH)P = P - KHP ***/
-       P = P.minus(K.mult(H).mult(P));
+       P_ = (PMat.minus(KMat.mult(HMat).mult(PMat))).getArrayCopy();
    }
    
 	protected void calcf(final double[] XIn, double[] XOut, double deltaT){
@@ -235,6 +245,14 @@ public class DiffDriveExtKF{
    public void getSimpleP(double[] POut){
 	   for(int row = 0; row<nStates; row++){
 		   POut[row]=P_[row][row];
+	   }
+   }
+   
+   private void wipeRows(double[][] inArray, final boolean[] MeasFlags){
+	   for(int row = 0; row<nSensors; row++){
+		   if( !MeasFlags[row]){
+			   Arrays.fill(inArray[row],0);
+		   }
 	   }
    }
    
