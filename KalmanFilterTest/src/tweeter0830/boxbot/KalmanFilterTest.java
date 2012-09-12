@@ -81,7 +81,7 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
 	private SensorManager sensorManager_ = null;
 	
 	//Create a differential drive Kalman filter based on the dimensions of this robot 
-	DiffDriveExtKF kalmanFilter_ = new DiffDriveExtKF(0.09, 0.21, 6371009, 34.6981);
+	//DiffDriveExtKF kalmanFilter_ = new DiffDriveExtKF(0.09, 0.21, 6371009, 34.6981);
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,11 +99,6 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
         magnetXValue_ = (TextView) findViewById(R.id.magnet_x_value);
         magnetYValue_ = (TextView) findViewById(R.id.magnet_y_value);
         magnetZValue_ = (TextView) findViewById(R.id.magnet_z_value);
-        
-        // Capture orientation related view elements
-//        orientXValue_ = (TextView) findViewById(R.id.orient_x_value);
-//    	measCount++;        orientYValue_ = (TextView) findViewById(R.id.orient_y_value);
-//        orientZValue_ = (TextView) findViewById(R.id.orient_z_value);
       
         // Capture Kalman filter related view elements
         eastValue_ = (TextView) findViewById(R.id.orient_east_value);
@@ -134,43 +129,6 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
 		accelerValue_.setText("0.00");
 		thetaValue_.setText("0.00");
 		thetaDotValue_.setText("0.00");
-        
-        kalmanFilter_.initialize();
-        
-        //set the Kalman's initial state to zero
-        double[] initialState = new double[6];
-        kalmanFilter_.setState(initialState);
-        
-        //Set the initial error covariance matrix
-        double[] initalErrorCov = new double[6];
-        initalErrorCov[0] = 0;
-        initalErrorCov[1] = 0;
-        initalErrorCov[2] = .001;
-        initalErrorCov[3] = .001;
-        initalErrorCov[4] = .1;
-        initalErrorCov[5] = .001;
-        kalmanFilter_.setSimpleP(initalErrorCov);
-        
-        //Set the process error covariance matrix
-        double[] proccErrorCov = new double[6];
-        proccErrorCov[0] = .2;
-        proccErrorCov[1] = .2;
-        proccErrorCov[2] = .01;
-        proccErrorCov[3] = .3;
-        proccErrorCov[4] = .2;
-        proccErrorCov[5] = 0.1;
-        kalmanFilter_.setSimpleQ(proccErrorCov);
-        
-        //Set the measurement error covariance matrix
-        double[] measErrorCov = new double[6];
-        measErrorCov[0] = 0;
-        measErrorCov[1] = 0;
-        measErrorCov[2] = 0.15;
-        measErrorCov[3] = 0.15;
-        measErrorCov[4] = 0.03;
-        //This is a bad way to do this. The theta measurement doesn't have a normal distribution 
-        measErrorCov[5] = 0.1;
-        kalmanFilter_.setSimpleR(measErrorCov);
     }
 
     // This method will update the UI on new sensor events
@@ -178,20 +136,26 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
     	final DecimalFormat fivePlaces = new DecimalFormat("0.00000");
     	
     	synchronized (this) {
-    		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+    		if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
     			AccelValues_ = sensorEvent.values.clone();
     			accelXValue_.setText(Float.toString(AccelValues_[0]));
     			accelYValue_.setText(Float.toString(AccelValues_[1]));
     			accelZValue_.setText(Float.toString(AccelValues_[2]));
-    			kalmanFilter_.updateAccel(AccelValues_[1]);
+    			//kalmanFilter_.updateAccel(AccelValues_[1]);
     		}
-    		if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+    		if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
     			
-    			MagnetValues_ = sensorEvent.values.clone();
-    			magnetXValue_.setText(Float.toString(MagnetValues_[0]));
-    			magnetYValue_.setText(Float.toString(MagnetValues_[1]));
-    			magnetZValue_.setText(Float.toString(MagnetValues_[2]));
-    			kalmanFilter_.updateHeading(Math.atan2(MagnetValues_[0], MagnetValues_[1]));
+    			float[] mRotationMatrix = new float[16];
+    			float[] eulerAngles = new float[3];
+    			
+				SensorManager.getRotationMatrixFromVector(
+                        mRotationMatrix , sensorEvent.values);
+				SensorManager.getOrientation(mRotationMatrix, eulerAngles);
+    			magnetXValue_.setText(Float.toString(eulerAngles[0]));
+    			magnetYValue_.setText(Float.toString(eulerAngles[1]));
+    			magnetZValue_.setText(Float.toString(eulerAngles[2]));
+    			
+    			//kalmanFilter_.updateHeading(Math.atan2(MagnetValues_[0], MagnetValues_[1]));
     		}
     		if (AccelValues_ != null && MagnetValues_ != null) { 
                 SensorManager.getRotationMatrix(RotatMatrix, OrientMatrix, AccelValues_, MagnetValues_); 
@@ -202,7 +166,6 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
 //                orientXValue_.setText(Float.toString(OrientValues_[0]));
 //                orientYValue_.setText(Float.toString(OrientValues_[1]));
 //                orientZValue_.setText(Float.toString(OrientValues_[2]));
-                kalmanFilter_.getState(currentState_);
                 eastValue_.setText(fivePlaces.format(currentState_[0]));
                 northValue_.setText(fivePlaces.format(currentState_[1]));
                 velocityValue_.setText(fivePlaces.format(currentState_[2]));
@@ -224,9 +187,9 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
     	// Register this class as a listener for the accelerometer sensor
     	//I have set the sensor rates to a slower rate so that I don't overwhelm the ability of the phone to write to the log
     	//TODO Change the sensor rates back to fastest when I'm done debugging (never?)
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
-    	// ...and the magnetic sensor
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
+    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_UI);
+    	// ...and the rotation sensor
+    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
     	//try to open a log file
     	try {
     		File logFile = new File(Environment.getExternalStorageDirectory()+"/sensorLog.csv");
