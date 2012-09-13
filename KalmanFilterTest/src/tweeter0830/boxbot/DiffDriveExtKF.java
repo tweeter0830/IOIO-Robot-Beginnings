@@ -155,7 +155,7 @@ public class DiffDriveExtKF extends ExtendedKF{
 //      double heading = inState.get(5);
 //      double headingDot = inState.get(6);
 
-       H.setRow(0, 0,                  Math.cos(inititalLat_)/R_,0,0,0,0,0);
+       H.setRow(0, 0,                  Math.cos(inititalLat_),0,0,0,0,0);
        H.setRow(1, 0,                  0,1.0/R_,0,0,0,0);
        H.setRow(2, 0,                  0,0,1.0/D_,0,0,L_/(2*D_));
        H.setRow(3, 0,                  0,0,1.0/D_,0,0,-L_/(2*D_));
