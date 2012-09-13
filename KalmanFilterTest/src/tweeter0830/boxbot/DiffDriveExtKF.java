@@ -124,7 +124,7 @@ public class DiffDriveExtKF{
        Matrix PMat = Matrix(P_);
        Matrix QMat = Matrix(Q_);
        
-       P_ = (FMat.times(PMat).times(FMat.transpose())).plus(Q).getArrayCopy();
+       P_ = FMat.times(PMat).times(FMat.transpose()).plus(Q).getArrayCopy();
    }
    
    public void update(boolean[] MeasFlags) {
@@ -147,16 +147,16 @@ public class DiffDriveExtKF{
        Matrix PMat = Matrix(P_);
        Matrix RMat = Matrix(R_);
        
-       Matrix SMat = (HMat.times(PMat).times(HMat.transpose())).plus(RMat);
+       Matrix SMat = HMat.times(PMat).times(HMat.transpose()).plus(RMat);
        
        /*** K = PH'S^(-1) ***/
-       Matrix KMat = PMat.times(HMat.transpose().times(SMat.invert()));
+       Matrix KMat = PMat.times(HMat.transpose()).times(SMat.invert());
        
        /*** x = x + Ky ***/
-       X_ = (XMat.plus(KMat.times(YMat))).getArrayCopy();
+       X_ = XMat.plus(KMat.times(YMat)).getArrayCopy();
 
        /*** P = (I-kH)P = P - KHP ***/
-       P_ = (PMat.minus(KMat.mult(HMat).mult(PMat))).getArrayCopy();
+       P_ = PMat.minus(KMat.mult(HMat).mult(PMat)).getArrayCopy();
    }
    
 	protected void calcf(final double[] XIn, double[] XOut, double deltaT){
