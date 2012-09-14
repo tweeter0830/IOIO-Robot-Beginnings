@@ -160,6 +160,7 @@ public class DiffDriveExtKF{
        P_ = PMat.minus(KMat.mult(HMat).mult(PMat)).getArrayCopy();
    }
    
+<<<<<<< HEAD
 	protected void calcf(final double[] XIn, double[] XOut, double deltaT){
 		double x = Xin[0];
 		double y = Xin[1];
@@ -171,6 +172,23 @@ public class DiffDriveExtKF{
 	private static String LOGTAG_ = "DiffDriveExtKF";
 	private final int nStates = 6;
 	private final int nSensors = 7;
+=======
+   protected void calcF(final SimpleMatrix inState, SimpleMatrix F,double timeChange){
+       double easting = inState.get(0);
+       double northing = inState.get(1);
+       double velocity = inState.get(2);
+       double accel = inState.get(3);
+       double heading = inState.get(4);
+       double headingDot = inState.get(5);
+
+       F.setRow(0, 0,                  1, 0, Math.sin(heading)*timeChange,0,velocity*Math.cos(heading)*timeChange,0);
+       F.setRow(1, 0,                  0, 1, Math.cos(heading)*timeChange,0,-velocity*Math.sin(heading)*timeChange,0);
+       F.setRow(2, 0,                  0, 0, 1, timeChange,0,0);
+       F.setRow(3, 0,                  0, 0, 0, 1,0,0);
+       F.setRow(4, 0,                  0, 0, 0, 0,1,timeChange);
+       F.setRow(5, 0,                  0, 0, 0, 0,0,1);
+   }
+>>>>>>> d1332ec461a2cef1d2c3f15ed4f5deb465cb283b
 
 	//States
 	private double[] X_ = new double[nStates];
