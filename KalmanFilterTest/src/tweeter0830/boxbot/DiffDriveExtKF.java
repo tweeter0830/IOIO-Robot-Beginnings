@@ -48,7 +48,23 @@ public class DiffDriveExtKF{
 		oldTime_ = System.nanoTime();
 		timeSet_ = true;
 	}
+	
+	public void updateAll(double[] measMatrix){
+		predict(getTimeChange());
 
+		Z_ = Arrays.copyOf(measMatrix, 7);
+		boolean[] measFlags = new boolean[7];
+		measFlags[0] = true;
+		measFlags[1] = true;
+		measFlags[2] = true;
+		measFlags[3] = true;
+		measFlags[4] = true;
+		measFlags[5] = true;
+		measFlags[6] = true;
+		
+		update(measFlags);
+	}
+	
 	public void updateGPS(double lat, double longi){
 		predict(getTimeChange());
 
@@ -115,22 +131,22 @@ public class DiffDriveExtKF{
 		// x = f(x)
 		double[] XNew = new double[nStates];
 		
-		Log.v(LOGTAG_, "Predict:\n XIn:" + Arrays.toString(X_));
+//		Log.v(LOGTAG_, "Predict:\n XIn:" + Arrays.toString(X_));
 		calcf(X_,XNew,deltaT);
 		X_ = XNew;
-		Log.v(LOGTAG_, "XOut:" + Arrays.toString(X_));
+//		Log.v(LOGTAG_, "XOut:" + Arrays.toString(X_));
 		
 		// P = F P F' + Q
 		calcF(X_,F_,deltaT);
 
-		Log.v(LOGTAG_, "F_:" + Arrays.deepToString(F_));
+//		Log.v(LOGTAG_, "F_:" + Arrays.deepToString(F_));
 		//Matrix-ize everything :/
 		Matrix FMat = new Matrix(F_);
 		Matrix PMat = new Matrix(P_);
 		Matrix QMat = new Matrix(Q_);
 
 		P_ = FMat.times(PMat).times(FMat.transpose()).plus(QMat).getArrayCopy();
-		Log.v(LOGTAG_, "P_:" + Arrays.deepToString(P_));
+//		Log.v(LOGTAG_, "P_:" + Arrays.deepToString(P_));
 	}
 
 	public void update(boolean[] MeasFlags) {
@@ -138,20 +154,20 @@ public class DiffDriveExtKF{
 		/*** y = z - h(x) ***/
 		double[] hCalced = new double[nSensors];
 		calch(X_, hCalced);
-		Log.v(LOGTAG_, "Update\nXin:" + Arrays.toString(X_));
+//		Log.v(LOGTAG_, "Update\nXin:" + Arrays.toString(X_));
 		//Matrix-ize Everything :/
 		Matrix ZMat = new Matrix(Z_,nSensors);
 		Matrix hMat = new Matrix(hCalced,nSensors);
 
 		Matrix YMat = ZMat.minus(hMat);
 
-		Log.v(LOGTAG_, "YMat:" + Arrays.deepToString(YMat.getArrayCopy()));
+//		Log.v(LOGTAG_, "YMat:" + Arrays.deepToString(YMat.getArrayCopy()));
 		/*** S = H P H' + R ***/
 		calcH(H_);
-		Log.v(LOGTAG_, "H_ PreWipe:" + Arrays.deepToString(H_));
-		Log.v(LOGTAG_, "MeasFlags:" + Arrays.toString(MeasFlags));
-		wipeRows(H_, MeasFlags);
-		Log.v(LOGTAG_, "H_ PostWipe:" + Arrays.deepToString(H_));
+//		Log.v(LOGTAG_, "H_ PreWipe:" + Arrays.deepToString(H_));
+//		Log.v(LOGTAG_, "MeasFlags:" + Arrays.toString(MeasFlags));
+		//wipeRows(H_, MeasFlags);
+//		Log.v(LOGTAG_, "H_ PostWipe:" + Arrays.deepToString(H_));
 		//Matrix-ize Everything :/
 		Matrix HMat = new Matrix(H_);
 		Matrix PMat = new Matrix(P_);
@@ -159,7 +175,7 @@ public class DiffDriveExtKF{
 		Matrix XMat = new Matrix(X_,nStates);
 
 		Matrix SMat = HMat.times(PMat).times(HMat.transpose()).plus(RMat);
-		Log.v(LOGTAG_, "S:" + Arrays.deepToString(SMat.getArray()));
+//		Log.v(LOGTAG_, "S:" + Arrays.deepToString(SMat.getArray()));
 		/*** K = PH'S^(-1) ***/
 		Matrix KMat = PMat.times(HMat.transpose()).times(SMat.inverse());
 
