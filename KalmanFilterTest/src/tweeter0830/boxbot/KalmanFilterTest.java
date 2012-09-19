@@ -31,7 +31,7 @@ import android.widget.TextView;
  * Accelerometer ~= .03
  * Magnetometer ~= .46
  * Wheel = 0.31 @ 5.4 = 5.6%
- * 		 = 0.15 @ 2.5 = 4.4%
+ * 	 = 0.15 @ 2.5 = 4.4%
  *       = 0.03 @ 0.7 = 4.2%
  */
 
@@ -217,12 +217,9 @@ public class KalmanFilterTest extends IOIOActivity{
     }
     
 	class RobotLoop extends BaseIOIOLooper {
-		/** The on-board LED. */
-		private DigitalOutput led_;
 
 		/**
 		 * Called every time a connection with IOIO has been established.
-		 * Typically used to open pins.
 		 * 
 		 * @throws ConnectionLostException
 		 *             When IOIO connection is lost.
