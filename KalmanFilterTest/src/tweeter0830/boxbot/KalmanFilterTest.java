@@ -5,8 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
@@ -40,6 +38,9 @@ import android.widget.TextView;
 public class KalmanFilterTest extends IOIOActivity{
 	public static final String LOGTAG_ = "Kalman Test";
 	public static final boolean FILELOGGING_ = false;
+	
+	private double wheelDiam_ = 0.09; //meters
+	private double wheelBase_ = 0.21; //meters
 	
 	// Accelerometer X, Y, and Z values
 	private TextView accelXValue_;
@@ -160,11 +161,11 @@ public class KalmanFilterTest extends IOIOActivity{
         double[] measErrorCov = new double[7];
         measErrorCov[0] = 999999999; //GPS X
         measErrorCov[1] = 999999999; //GPS Y
-        measErrorCov[2] = 999999999; //Wheel velocity
+        measErrorCov[2] = 0.15*wheelDiam_; //Wheel velocity
         measErrorCov[3] = 0.00584;		 //Acceleration //Average = 0.01 //STDEV = 0.00584
         measErrorCov[4] = 0.0489;		 //Orientation //Average = - //STDEV = 0.0489
         measErrorCov[5] = 0.00339;		 //Gyro Theta Dot ////Average = -0.056 //STDEV = 0.00339
-        measErrorCov[6] = 999999999; //Wheel Theta Dot
+        measErrorCov[6] = 0.15*wheelDiam_/wheelBase_; //Wheel Theta Dot
         kalmanFilter_.setDiagonal(kalmanFilter_.R_,measErrorCov);
         
         measZeroOffset_[0] = 0;
@@ -176,23 +177,12 @@ public class KalmanFilterTest extends IOIOActivity{
         measZeroOffset_[6] = 0;
     }
 
+	    
     @Override
     protected void onResume() {
     	super.onResume();
     	//TODO Speed this up when I think the program can handle it
     	sensorWorker_.registerListeners(SensorManager.SENSOR_DELAY_GAME);
-    	
-        int delay = 500; // delay for 0.5 sec. 
-        int period = 100; // repeat every .1 sec. 
-        kUpdateTimer_ = new Timer(); 
-        kUpdateTimer_.scheduleAtFixedRate(new TimerTask() 
-            { 
-                public void run() 
-                {
-                	robotLoop();
-                } 
-            }, delay, period);
-        
     	//try to open a log file
     	if(FILELOGGING_){
 	    	try {
@@ -206,29 +196,6 @@ public class KalmanFilterTest extends IOIOActivity{
 				Log.e(LOGTAG_, e.getMessage());
 			}
     	}
-    }
-
-    private void robotLoop(){
-    	//TODO currentMeas_[0] = GPS X
-    	//TODO currentMeas_[1] = GPS Y
-    	//TODO currentMeas_[2] = Wheel Forward Velocity
-    	currentMeas_[3] = sensorWorker_.accelValues_[1];
-    	currentMeas_[4] = sensorWorker_.orientValues_[0];
-    	currentMeas_[5] = sensorWorker_.gyroValues_[2];
-    	//TODO currentMeas_[6] = Wheel Rotational Velocity
-    	updateSensorText(sensorWorker_);
-    	
-    	kalmanFilter_.updateAll(currentMeas_);
-        kalmanFilter_.getState(currentState_);
-        updateStateText(currentState_);
-        if(FILELOGGING_){
-	        try{
-	        	writer_.write(Arrays.toString(currentMeas_)+'\n');
-			} catch (IOException e) {
-				e.printStackTrace();
-				Log.e(LOGTAG_, e.getMessage());
-			}
-        }
     }
     
     @Override
@@ -249,14 +216,78 @@ public class KalmanFilterTest extends IOIOActivity{
     	super.onPause();
     }
     
-	    /**
+	class RobotLoop extends BaseIOIOLooper {
+		/** The on-board LED. */
+		private DigitalOutput led_;
+
+		/**
+		 * Called every time a connection with IOIO has been established.
+		 * Typically used to open pins.
+		 * 
+		 * @throws ConnectionLostException
+		 *             When IOIO connection is lost.
+		 * 
+		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#setup()
+		 */
+		@Override
+		protected void setup() throws ConnectionLostException {
+			led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
+			arduUart_ = ioio_.openUart(6, 7, 115200, Uart.Parity.NONE, Uart.StopBits.ONE);
+			arduIn_ = arduUart_.getInputStream();
+			arduOut_ = arduUart_.getOutputStream();
+			arduConnect_ = new ArduConnect(arduIn_, arduOut_);
+			Log.v(LOGTAG_,"Establishing Connection");
+			arduConnect_.establishConnection();
+			Log.v(LOGTAG_,"Connection Established");
+		}
+
+		/**
+		 * Called repetitively while the IOIO is connected.
+		 * 
+		 * @throws ConnectionLostException
+		 *             When IOIO connection is lost.
+		 * 
+		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#loop()
+		 */
+		@Override
+		public void loop() throws ConnectionLostException {
+			//Update current sensor readings from the arduino
+			arduConnect_.updateSpeed();
+			//TODO currentMeas_[0] = GPS X
+	    	//TODO currentMeas_[1] = GPS Y
+	    	currentMeas_[2] = (arduConnect.leftSpeed+arduConnect.rightSpeed)/2*wheelDiam_;
+	    	currentMeas_[3] = sensorWorker_.accelValues_[1];
+	    	currentMeas_[4] = sensorWorker_.orientValues_[0];
+	    	currentMeas_[5] = sensorWorker_.gyroValues_[2];
+	    	currentMeas_[6] = (arduConnect.rightSpeed-arduConnect.leftSpeed)/wheelBase_*wheelDiam_;
+	    	updateSensorText(sensorWorker_);
+	    	
+	    	kalmanFilter_.updateAll(currentMeas_);
+	        kalmanFilter_.getState(currentState_);
+	        updateStateText(currentState_);
+	        if(FILELOGGING_){
+		        try{
+		        	writer_.write(Arrays.toString(currentMeas_)+'\n');
+				} catch (IOException e) {
+					e.printStackTrace();
+					Log.e(LOGTAG_, e.getMessage());
+				}
+	        }
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
+    
+	 /**
 	 * A method to create our IOIO thread.
 	 * 
 	 * @see ioio.lib.util.AbstractIOIOActivity#createIOIOThread()
 	 */
 	@Override
 	protected IOIOLooper createIOIOLooper() {
-		return new BoxBotLooper();
+		return new RobotLoop();
 	}
     
     private void updateSensorText(final SensorWorker sensorWorker) {
