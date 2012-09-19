@@ -8,10 +8,9 @@ import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.commons.math3.analysis.function.Atan2;
-
-import ioio.lib.android.AbstractIOIOActivity;
-import ioio.lib.api.exception.ConnectionLostException;
+import ioio.lib.util.BaseIOIOLooper;
+import ioio.lib.util.IOIOLooper;
+import ioio.lib.util.android.IOIOActivity;
 import android.app.Activity;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -38,7 +37,7 @@ import android.widget.TextView;
  *       = 0.03 @ 0.7 = 4.2%
  */
 
-public class KalmanFilterTest extends Activity{
+public class KalmanFilterTest extends IOIOActivity{
 	public static final String LOGTAG_ = "Kalman Test";
 	public static final boolean FILELOGGING_ = false;
 	
@@ -250,55 +249,15 @@ public class KalmanFilterTest extends Activity{
     	super.onPause();
     }
     
-//    //I've nulled out all of the IOIO stuff for the time being
-//	class IOIOThread extends AbstractIOIOActivity.IOIOThread {
-//		@Override
-//		public void setup() throws ConnectionLostException {
-//			try {
-//			} catch (ConnectionLostException e) {
-//				enableUi(false);
-//				throw e;
-//			}
-//		}
-//		
-//		@Override
-//		public void loop() throws ConnectionLostException {
-//			try {
-//			} catch (InterruptedException e) {
-//				ioio_.disconnect();
-//			} catch (ConnectionLostException e) {
-//				enableUi(false);
-//				throw e;
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//	}
-
-//	@Override
-//	protected AbstractIOIOActivity.IOIOThread createIOIOThread() {
-//		return new IOIOThread();
-//	}
-
-//	private void enableUi(final boolean enable) {
-//		runOnUiThread(new Runnable() {
-//			@Override
-//			public void run() {
-//				seekBar_.setEnabled(enable);
-//				toggleButton_.setEnabled(enable);
-//			}
-//		});
-//	}
-//	
-//	private void setText(final String str) {
-//		runOnUiThread(new Runnable() {
-//			@Override
-//			public void run() {
-//				textView_.setText(str);
-//			}
-//		});
-//	}
+	    /**
+	 * A method to create our IOIO thread.
+	 * 
+	 * @see ioio.lib.util.AbstractIOIOActivity#createIOIOThread()
+	 */
+	@Override
+	protected IOIOLooper createIOIOLooper() {
+		return new BoxBotLooper();
+	}
     
     private void updateSensorText(final SensorWorker sensorWorker) {
 		runOnUiThread(new Runnable() {
