@@ -13,9 +13,6 @@ import org.apache.commons.math3.analysis.function.Atan2;
 import ioio.lib.android.AbstractIOIOActivity;
 import ioio.lib.api.exception.ConnectionLostException;
 import android.app.Activity;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -41,28 +38,24 @@ import android.widget.TextView;
  *       = 0.03 @ 0.7 = 4.2%
  */
 
-//public class KalmanFilterTest extends AbstractIOIOActivity implements SensorEventListener
-public class KalmanFilterTest extends Activity implements SensorEventListener{
-	
+public class KalmanFilterTest extends Activity{
 	public static final String LOGTAG_ = "Kalman Test";
-
+	public static final boolean FILELOGGING_ = false;
+	
 	// Accelerometer X, Y, and Z values
 	private TextView accelXValue_;
 	private TextView accelYValue_;
 	private TextView accelZValue_;
-	private float[] AccelValues_;
 	
 	// Accelerometer X, Y, and Z values
 	private TextView gyroXValue_;
 	private TextView gyroYValue_;
 	private TextView gyroZValue_;
-	private float[] gyroValues_;
 	
 	// Orientation X, Y, and Z values
 	private TextView orientXValue_;
 	private TextView orientYValue_;
 	private TextView orientZValue_;
-	private float[] orientValues_;
 	
 	// Kalman Filter Values
 	private TextView eastValue_;
@@ -72,29 +65,26 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
 	private TextView thetaValue_;
 	private TextView thetaDotValue_;
 	
-	private float[] OrientValues_ = new float[3];
-	
-	// Rotation Matrix
-	private float[] RotatMatrix = new float[16];
 	// State Array
 	private double[] currentState_ = new double[6];
 	private double[] currentMeas_ = new double[7];
+	private double[] measZeroOffset_ = new double[7];
 	
 	private FileWriter writer_;
-	private SensorManager sensorManager_ = null;
-	
 	private Timer kUpdateTimer_;
 	
+	//A SensorWorker to take care of getting the sensor readings from the phone
+	private SensorWorker sensorWorker_;
 	//Create a differential drive Kalman filter based on the dimensions of this robot 
-	DiffDriveExtKF kalmanFilter_ = new DiffDriveExtKF(0.09, 0.21, 6371009, 34.6981);
+	private DiffDriveExtKF kalmanFilter_ = new DiffDriveExtKF(0.09, 0.21, 6371009, 34.6981);
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get a reference to a SensorManager
-        sensorManager_ = (SensorManager) getSystemService(SENSOR_SERVICE);
         setContentView(R.layout.main);
-        
+        //Create a SensorWorker to take care of getting the sensor readings from the phone
+    	sensorWorker_ = new SensorWorker( (SensorManager)getSystemService(SENSOR_SERVICE) );
+    	
         // Capture accelerometer related view elements
         accelXValue_ = (TextView) findViewById(R.id.accel_x_value);
         accelYValue_ = (TextView) findViewById(R.id.accel_y_value);
@@ -172,93 +162,82 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
         measErrorCov[0] = 999999999; //GPS X
         measErrorCov[1] = 999999999; //GPS Y
         measErrorCov[2] = 999999999; //Wheel velocity
-        measErrorCov[3] = 0.03;		 //Acceleration //Average = 0.00355 //STDEV = 0.00907
-        measErrorCov[4] = 0.1;		 //Orientation //Average = 0.0115 //STDEV = 0.001869
-        measErrorCov[5] = 0.1;		 //Gyro Theta Dot ////Average = -0.05529 //STDEV = 0.003184889
+        measErrorCov[3] = 0.00584;		 //Acceleration //Average = 0.01 //STDEV = 0.00584
+        measErrorCov[4] = 0.0489;		 //Orientation //Average = - //STDEV = 0.0489
+        measErrorCov[5] = 0.00339;		 //Gyro Theta Dot ////Average = -0.056 //STDEV = 0.00339
         measErrorCov[6] = 999999999; //Wheel Theta Dot
         kalmanFilter_.setDiagonal(kalmanFilter_.R_,measErrorCov);
-    }
-
-    // This method will update the UI on new sensor events
-    public void onSensorChanged(SensorEvent sensorEvent) {
-    	synchronized (this) {
-    		if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-    			AccelValues_ = sensorEvent.values.clone();
-    			accelXValue_.setText(Float.toString(AccelValues_[0]));
-    			accelYValue_.setText(Float.toString(AccelValues_[1]));
-    			accelZValue_.setText(Float.toString(AccelValues_[2]));
-    			currentMeas_[3] = AccelValues_[1];
-    		}
-    		if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-    			gyroValues_ = sensorEvent.values.clone();
-    			gyroXValue_.setText(Float.toString(gyroValues_[0]));
-    			gyroYValue_.setText(Float.toString(gyroValues_[1]));
-    			gyroZValue_.setText(Float.toString(gyroValues_[2]));
-    			currentMeas_[5] = gyroValues_[2];
-    		}
-    		if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-    			SensorManager.getRotationMatrixFromVector(RotatMatrix, sensorEvent.values);
-    			SensorManager.getOrientation(RotatMatrix, OrientValues_);
-    			orientXValue_.setText(Double.toString(OrientValues_[0]/3.14159*180.0));
-    			orientYValue_.setText(Double.toString(OrientValues_[1]/3.14159*180.0));
-    			orientZValue_.setText(Double.toString(OrientValues_[2]/3.14159*180.0));
-    			currentMeas_[4] = OrientValues_[0];
-    		}
-    	}
-    }
-
-    // I've chosen to not implement this method
-    public void onAccuracyChanged(Sensor arg0, int arg1) {
-    	// TODO Auto-generated method stub
+        
+        measZeroOffset_[0] = 0;
+        measZeroOffset_[1] = 0;
+        measZeroOffset_[2] = 0;
+        measZeroOffset_[3] = 0.01;
+        measZeroOffset_[4] = 0;
+        measZeroOffset_[5] = -0.056;
+        measZeroOffset_[6] = 0;
     }
 
     @Override
     protected void onResume() {
     	super.onResume();
-    	// Register this class as a listener for the accelerometer sensor
-    	//I have set the sensor rates to a slower rate so that I don't overwhelm the ability of the phone
-    	//TODO Change the sensor rates back to fastest when I'm done debugging (never?)
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_UI);
-    	// ...and the magnetic sensor
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
-    	sensorManager_.registerListener(this, sensorManager_.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
-    	//try to open a log file
-    	try {
-    		File logFile = new File(Environment.getExternalStorageDirectory()+"/sensorLog.csv");
-    		//clear the file if it exists
-    		logFile.delete();
-			writer_ = new FileWriter(logFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			Log.e(LOGTAG_, e.getMessage());
-		}
-        int delay = 500; // delay for 1 sec. 
-        int period = 100; // repeat every 10 sec. 
+    	//TODO Speed this up when I think the program can handle it
+    	sensorWorker_.registerListeners(SensorManager.SENSOR_DELAY_GAME);
+    	
+        int delay = 500; // delay for 0.5 sec. 
+        int period = 100; // repeat every .1 sec. 
         kUpdateTimer_ = new Timer(); 
         kUpdateTimer_.scheduleAtFixedRate(new TimerTask() 
             { 
                 public void run() 
-                { 
-                    kalmanFilter_.updateAll(currentMeas_);
-                    kalmanFilter_.getState(currentState_);
-                    updateStateText(currentState_);
-                    try{
-                    	writer_.write(Arrays.toString(currentMeas_)+'\n');
-        			} catch (IOException e) {
-        				// TODO Auto-generated catch block
-        				e.printStackTrace();
-        				Log.e(LOGTAG_, e.getMessage());
-        			}
+                {
+                	robotLoop();
                 } 
             }, delay, period);
+        
+    	//try to open a log file
+    	if(FILELOGGING_){
+	    	try {
+	    		File logFile = new File(Environment.getExternalStorageDirectory()+"/sensorLog.csv");
+	    		//clear the file if it exists
+	    		logFile.delete();
+				writer_ = new FileWriter(logFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				Log.e(LOGTAG_, e.getMessage());
+			}
+    	}
     }
 
+    private void robotLoop(){
+    	//TODO currentMeas_[0] = GPS X
+    	//TODO currentMeas_[1] = GPS Y
+    	//TODO currentMeas_[2] = Wheel Forward Velocity
+    	currentMeas_[3] = sensorWorker_.accelValues_[1];
+    	currentMeas_[4] = sensorWorker_.orientValues_[0];
+    	currentMeas_[5] = sensorWorker_.gyroValues_[2];
+    	//TODO currentMeas_[6] = Wheel Rotational Velocity
+    	updateSensorText(sensorWorker_);
+    	
+    	kalmanFilter_.updateAll(currentMeas_);
+        kalmanFilter_.getState(currentState_);
+        updateStateText(currentState_);
+        if(FILELOGGING_){
+	        try{
+	        	writer_.write(Arrays.toString(currentMeas_)+'\n');
+			} catch (IOException e) {
+				e.printStackTrace();
+				Log.e(LOGTAG_, e.getMessage());
+			}
+        }
+    }
+    
     @Override
     protected void onPause(){
     	// Unregister the listener
-    	sensorManager_.unregisterListener(this);
+    	sensorWorker_.unregListeners();
     	kUpdateTimer_.cancel();
+    	
     	//If we successfully opened a file, kill it
     	if(writer_!=null)
 	    	try {
@@ -320,6 +299,28 @@ public class KalmanFilterTest extends Activity implements SensorEventListener{
 //			}
 //		});
 //	}
+    
+    private void updateSensorText(final SensorWorker sensorWorker) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+		        final DecimalFormat fivePlaces = new DecimalFormat("0.00000");
+		        
+		        accelXValue_.setText(fivePlaces.format(sensorWorker.accelValues_[0]));
+		        accelYValue_.setText(fivePlaces.format(sensorWorker.accelValues_[1]));
+		        accelZValue_.setText(fivePlaces.format(sensorWorker.accelValues_[2]));
+		        
+		        gyroXValue_.setText(fivePlaces.format(sensorWorker.gyroValues_[0]));
+		        gyroYValue_.setText(fivePlaces.format(sensorWorker.gyroValues_[1]));
+		        gyroZValue_.setText(fivePlaces.format(sensorWorker.gyroValues_[2]));
+		        
+		        orientXValue_.setText(fivePlaces.format(sensorWorker.orientValues_[0]));
+		        orientYValue_.setText(fivePlaces.format(sensorWorker.orientValues_[1]));
+		        orientZValue_.setText(fivePlaces.format(sensorWorker.orientValues_[2]));
+			}
+		});
+	}
+    
     private void updateStateText(final double[] states) {
 		runOnUiThread(new Runnable() {
 			@Override
