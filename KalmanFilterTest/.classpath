@@ -13,5 +13,6 @@
 			<attribute name="javadoc_location" value="file:/home/jacob/Packages/commons-math3-3.0/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/PID"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

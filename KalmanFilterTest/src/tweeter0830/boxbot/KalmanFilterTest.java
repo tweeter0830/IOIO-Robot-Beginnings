@@ -3,12 +3,20 @@ package tweeter0830.boxbot;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
+import tweeter0830.pidcontrol.PID;
+
+import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.IOIO;
+import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
+import ioio.lib.api.Uart;
 import android.app.Activity;
 import android.hardware.SensorManager;
 import android.os.Bundle;
@@ -71,7 +79,6 @@ public class KalmanFilterTest extends IOIOActivity{
 	private double[] measZeroOffset_ = new double[7];
 	
 	private FileWriter writer_;
-	private Timer kUpdateTimer_;
 	
 	//A SensorWorker to take care of getting the sensor readings from the phone
 	private SensorWorker sensorWorker_;
@@ -202,7 +209,6 @@ public class KalmanFilterTest extends IOIOActivity{
     protected void onPause(){
     	// Unregister the listener
     	sensorWorker_.unregListeners();
-    	kUpdateTimer_.cancel();
     	
     	//If we successfully opened a file, kill it
     	if(writer_!=null)
@@ -217,7 +223,14 @@ public class KalmanFilterTest extends IOIOActivity{
     }
     
 	class RobotLoop extends BaseIOIOLooper {
-
+		private DigitalOutput led_;
+		
+		private ArduConnect arduConnect_;
+		private Uart arduUart_;
+		private InputStream arduIn_;
+		private OutputStream arduOut_;
+		private PID leftMotorPID_;
+		private PID rightMotorPID_;
 		/**
 		 * Called every time a connection with IOIO has been established.
 		 * 
@@ -249,14 +262,18 @@ public class KalmanFilterTest extends IOIOActivity{
 		@Override
 		public void loop() throws ConnectionLostException {
 			//Update current sensor readings from the arduino
-			arduConnect_.updateSpeed();
+			try {
+				arduConnect_.updateSpeed();
+			} catch (IOException e1) {
+				ioio_.disconnect();
+			}
 			//TODO currentMeas_[0] = GPS X
 	    	//TODO currentMeas_[1] = GPS Y
-	    	currentMeas_[2] = (arduConnect.leftSpeed+arduConnect.rightSpeed)/2*wheelDiam_;
+	    	currentMeas_[2] = (arduConnect_.getLeftSpeed()+arduConnect_.getRightSpeed())/2*wheelDiam_;
 	    	currentMeas_[3] = sensorWorker_.accelValues_[1];
 	    	currentMeas_[4] = sensorWorker_.orientValues_[0];
 	    	currentMeas_[5] = sensorWorker_.gyroValues_[2];
-	    	currentMeas_[6] = (arduConnect.rightSpeed-arduConnect.leftSpeed)/wheelBase_*wheelDiam_;
+	    	currentMeas_[6] = (arduConnect_.getRightSpeed()-arduConnect_.getLeftSpeed())/wheelBase_*wheelDiam_;
 	    	updateSensorText(sensorWorker_);
 	    	
 	    	kalmanFilter_.updateAll(currentMeas_);
