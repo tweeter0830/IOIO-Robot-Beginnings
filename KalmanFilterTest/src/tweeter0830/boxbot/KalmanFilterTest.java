@@ -9,6 +9,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 
 import tweeter0830.pidcontrol.PID;
+import tweeter0830.boxbot.ArduConnect;
 
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
@@ -17,7 +18,6 @@ import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import ioio.lib.api.Uart;
-import android.app.Activity;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,7 +39,7 @@ import android.widget.TextView;
  * Accelerometer ~= .03
  * Magnetometer ~= .46
  * Wheel = 0.31 @ 5.4 = 5.6%
- * 	 = 0.15 @ 2.5 = 4.4%
+ *       = 0.15 @ 2.5 = 4.4%
  *       = 0.03 @ 0.7 = 4.2%
  */
 
@@ -169,7 +169,7 @@ public class KalmanFilterTest extends IOIOActivity{
         measErrorCov[0] = 999999999; //GPS X
         measErrorCov[1] = 999999999; //GPS Y
         measErrorCov[2] = 0.15*wheelDiam_; //Wheel velocity
-        measErrorCov[3] = 0.00584;		 //Acceleration //Average = 0.01 //STDEV = 0.00584
+        measErrorCov[3] = 999999999;//0.00584;		 //Acceleration //Average = 0.01 //STDEV = 0.00584
         measErrorCov[4] = 0.0489;		 //Orientation //Average = - //STDEV = 0.0489
         measErrorCov[5] = 0.00339;		 //Gyro Theta Dot ////Average = -0.056 //STDEV = 0.00339
         measErrorCov[6] = 0.15*wheelDiam_/wheelBase_; //Wheel Theta Dot
@@ -249,6 +249,14 @@ public class KalmanFilterTest extends IOIOActivity{
 			Log.v(LOGTAG_,"Establishing Connection");
 			arduConnect_.establishConnection();
 			Log.v(LOGTAG_,"Connection Established");
+			sensorWorker_.startAveraging(10.0);
+			Log.v(LOGTAG_, "Averaging");
+			while(sensorWorker_.averaging_){
+			}
+			Log.v(LOGTAG_, "AverageAccel = "+ sensorWorker_.aveAccelValues_[1]);
+			Log.v(LOGTAG_, "AverageGyro = "+ sensorWorker_.aveGyroValues_[2]);
+			measZeroOffset_[3] = sensorWorker_.aveAccelValues_[1];
+			measZeroOffset_[5] = sensorWorker_.aveGyroValues_[2];
 		}
 
 		/**
@@ -270,9 +278,9 @@ public class KalmanFilterTest extends IOIOActivity{
 			//TODO currentMeas_[0] = GPS X
 	    	//TODO currentMeas_[1] = GPS Y
 	    	currentMeas_[2] = (arduConnect_.getLeftSpeed()+arduConnect_.getRightSpeed())/2*wheelDiam_;
-	    	currentMeas_[3] = sensorWorker_.accelValues_[1];
+	    	currentMeas_[3] = sensorWorker_.accelValues_[1]-measZeroOffset_[3];
 	    	currentMeas_[4] = sensorWorker_.orientValues_[0];
-	    	currentMeas_[5] = sensorWorker_.gyroValues_[2];
+	    	currentMeas_[5] = sensorWorker_.gyroValues_[2]-measZeroOffset_[5];
 	    	currentMeas_[6] = (arduConnect_.getRightSpeed()-arduConnect_.getLeftSpeed())/wheelBase_*wheelDiam_;
 	    	updateSensorText(sensorWorker_);
 	    	

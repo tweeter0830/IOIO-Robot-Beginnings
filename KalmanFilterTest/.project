@@ -3,6 +3,7 @@
 	<name>KalmanFilterTest</name>
 	<comment></comment>
 	<projects>
+		<project>PID</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -30,4 +31,11 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>PID</name>
+			<type>2</type>
+			<location>/home/jacob/git/IOIO-Robot-Beginnings/PID</location>
+		</link>
+	</linkedResources>
 </projectDescription>
