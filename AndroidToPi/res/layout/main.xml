@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- <ScrollView xmlns:android="http://schemas.android.com/apk/res/android" -->
+
+<!-- android:layout_width="fill_parent" -->
+<!-- android:layout_height="wrap_content" > -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeScroll"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+    <RelativeLayout
+        android:id="@+id/RelativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:keepScreenOn="true"
+        android:stretchColumns="0" >
+
+        <TextView
+            android:id="@+id/accelerometer_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:padding="3dip"
+            android:text="Accelerometer"
+            android:textSize="9pt" />
+
+        <TextView
+            android:id="@+id/accel_x_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/accelerometer_label"
+            android:padding="3dip"
+            android:text="X:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/accel_x_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/accelerometer_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/accel_y_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/accel_x_label"
+            android:padding="3dip"
+            android:text="Y:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/accel_y_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/accel_x_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/accel_z_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/accel_y_label"
+            android:padding="3dip"
+            android:text="Z:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/accel_z_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/accel_y_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <View
+            android:id="@+id/firstDivider"
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/accel_z_label"
+            android:background="#920000" />
+
+        <TextView
+            android:id="@+id/gyroscope_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/firstDivider"
+            android:padding="3dip"
+            android:text="Gyroscope"
+            android:textSize="9pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_x_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/gyroscope_label"
+            android:padding="3dip"
+            android:text="X:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_x_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/gyroscope_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_y_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/gyroscope_x_label"
+            android:padding="3dip"
+            android:text="Y:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_y_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/gyroscope_x_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_z_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/gyroscope_y_label"
+            android:padding="3dip"
+            android:text="Z:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/gyroscope_z_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/gyroscope_y_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <View
+            android:id="@+id/divider2"
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/gyroscope_z_label"
+            android:background="#920000" />
+
+        <TextView
+            android:id="@+id/orientation_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/divider2"
+            android:padding="3dip"
+            android:text="Orientation"
+            android:textSize="9pt" />
+
+        <TextView
+            android:id="@+id/orientation_x_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/orientation_label"
+            android:padding="3dip"
+            android:text="X:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/orientation_x_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/orientation_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/orientation_y_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/orientation_x_label"
+            android:padding="3dip"
+            android:text="Y:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/orientation_y_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/orientation_x_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/orientation_z_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/orientation_y_label"
+            android:padding="3dip"
+            android:text="Z:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/orientation_z_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/orientation_y_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <View
+            android:id="@+id/divider3"
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/orientation_z_label"
+            android:background="#920000" />
+
+        <TextView
+            android:id="@+id/current_state_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/divider3"
+            android:padding="3dip"
+            android:text="Current Kalman Estimate"
+            android:textSize="9pt" />
+
+        <TextView
+            android:id="@+id/state_east_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/current_state_label"
+            android:padding="3dip"
+            android:text="Easting:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_east_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/current_state_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_north_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/state_east_label"
+            android:padding="3dip"
+            android:text="North:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_north_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/state_east_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_velo_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/state_north_label"
+            android:padding="3dip"
+            android:text="Velocity:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_velo_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/state_north_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_accel_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/state_velo_label"
+            android:padding="3dip"
+            android:text="Acceleration:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_accel_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/state_velo_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_theta_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/state_accel_label"
+            android:padding="3dip"
+            android:text="Theta:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_theta_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/state_accel_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_thetaDot_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/state_theta_label"
+            android:padding="3dip"
+            android:text="Theta Dot:"
+            android:textSize="8pt" />
+
+        <TextView
+            android:id="@+id/state_thetaDot_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/state_theta_label"
+            android:gravity="right"
+            android:padding="3dip"
+            android:textSize="8pt" />
+    </RelativeLayout>
+
+</ScrollView>
